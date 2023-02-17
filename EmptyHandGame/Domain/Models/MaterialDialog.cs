@@ -15,6 +15,7 @@ namespace Domain.Models
         private MaterialDesignThemes.Wpf.Card _card;
         private TextBlock _cardHeader;
         private TextBlock _textBlock;
+        public Button btnClose;
 
         public string Title
         {
@@ -46,45 +47,52 @@ namespace Domain.Models
                 Padding = new Thickness(16),
                 VerticalAlignment = VerticalAlignment.Center,
                 HorizontalAlignment = HorizontalAlignment.Center,
-                Width = 600,
-                Height = 200
+                //Width = 600,
+                //Height = 200
             };
 
 
             var grdCard = new Grid();
-            grdCard.RowDefinitions.Add(new RowDefinition { Height = new GridLength(70) });
-            grdCard.RowDefinitions.Add(new RowDefinition { Height = new GridLength(150) });
+            grdCard.Margin = new Thickness(20);
 
-            // Crea un objeto CardHeader de Material Design
-            var _headerBorder = new Border();
-            //_headerBorder.Background = PreviewKeyUpnew GridLength(70)
-            _cardHeader = new TextBlock
-            {
-                FontSize = 12,
-                Text = "tes2"
-            };
-            Grid.SetRow(_cardHeader, 0);
-            grdCard.Children.Add(_cardHeader);
+            var stackpanel = new StackPanel();
+            
+            grdCard.Children.Add(stackpanel);
 
             // Crea un objeto TextBlock
             _textBlock = new TextBlock
             {
                 FontSize = 18,
-                Text = "test"
+                Text = "test",
+                Height=30,
+                VerticalAlignment = VerticalAlignment.Center,
+
             };
             Grid.SetRow(_textBlock, 1);
-            grdCard.Children.Add(_textBlock);
+            stackpanel.Children.Add(_textBlock);
+
+            btnClose = new Button();
+            btnClose.Content = "Aceptar";
+            btnClose.Click += Close_Dialog;
+            btnClose.Margin =  new Thickness(0,15,0,0);
+            btnClose.VerticalAlignment= VerticalAlignment.Bottom;
+            stackpanel.Children.Add(btnClose);
 
 
             // Agrega el TextBlock como elemento hijo del Card
             _card.Content = grdCard;
-
+            _card.VerticalAlignment = VerticalAlignment.Center;
 
             // Agrega el Card como elemento hijo del Grid
             //grid.Children.Add(_card);
 
             // Agrega el Grid como elemento hijo del UserControl
             Content = _card;
+        }
+
+        private void Close_Dialog(object sender, RoutedEventArgs e)
+        {
+            this.Visibility = Visibility.Collapsed;
         }
 
         private static void OnTitleChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)

@@ -59,12 +59,12 @@ namespace EmptyHandGame
             deckImg = Card.CreateCardImage("Diamonds", "A", false, gameInstance.ActualRound.AvailableCards.Count() > 0);
             deckImg.Margin = new Thickness(5, 5, 20, 5);
 
-            deckImg.MouseLeftButtonUp += (s, e) => {  GetCardsFromDeck(); };
+            deckImg.MouseLeftButtonUp += (s, e) => { GetCardsFromDeck(); };
 
             Grid.SetColumn(deckImg, 0);
 
             deckGrid.Children.Add(deckImg);
-            
+
 
             var cardCount = 1;
 
@@ -210,16 +210,16 @@ namespace EmptyHandGame
 
             var handCards = gameInstance.ActualRound.PlayerCardsObj;
 
-            RowPlayerHand.Height = ((int)(handCards.Count / maxColums) +1) * 150;
+            RowPlayerHand.Height = ((int)(handCards.Count / maxColums) + 1) * 150;
             //this.Height = RowEnemy.Height + RowDeck.Height + RowPlayerHand.Height;
 
             if (handCards.Count > maxColums)
             {
                 RowPlayerHand.Width = maxColums * 110;
 
-                for (int i = 0; i < (int)(handCards.Count / maxColums) +1; i++)
+                for (int i = 0; i < (int)(handCards.Count / maxColums) + 1; i++)
                 {
-                    RowPlayerHand.RowDefinitions.Add(new RowDefinition() { Height =  new GridLength(150) });
+                    RowPlayerHand.RowDefinitions.Add(new RowDefinition() { Height = new GridLength(150) });
                 }
 
                 for (int i = 0; i < maxColums; i++)
@@ -230,7 +230,7 @@ namespace EmptyHandGame
             else
             {
                 RowPlayerHand.Width = handCards.Count * 110;
-                for ( int i = 0; i < handCards.Count; i++)
+                for (int i = 0; i < handCards.Count; i++)
                 {
                     RowPlayerHand.ColumnDefinitions.Add(new ColumnDefinition() { Width = new GridLength(110) });
                 }
@@ -251,17 +251,17 @@ namespace EmptyHandGame
                     RowPlayerHand.Children.Add(cardImage);
                     cardImage.MouseEnter += (s, e) => { CardImage_MouseEnter(card.Number); };
                     cardImage.MouseLeave += CardImage_MouseLeave;
-                    cardImage.MouseLeftButtonUp += (s, e) => { HandCard_Click(cardImage,card); };
+                    cardImage.MouseLeftButtonUp += (s, e) => { HandCard_Click(cardImage, card); };
                 }
 
-                if(cardCount < maxColums)
+                if (cardCount < maxColums)
                 {
                     cardCount++;
                 }
                 else
                 {
                     cardCount = 0;
-                    rowCount ++;
+                    rowCount++;
                 }
             }
         }
@@ -286,7 +286,11 @@ namespace EmptyHandGame
 
         private void CardImage_MouseEnter(int number)
         {
-            if(CardCanBePlayed(number) >= 0)
+            if (turnStarted == false)
+            {
+                Mouse.OverrideCursor = Cursors.Cross;
+            }
+            else if (CardCanBePlayed(number) >= 0)
             {
                 Mouse.OverrideCursor = Cursors.Hand;
             }
@@ -298,12 +302,12 @@ namespace EmptyHandGame
             int nextCard = cardNumber + 1;
             int previousCard = cardNumber - 1;
 
-            if(nextCard > 12) { nextCard = 0;}
-            if(previousCard < 0) { previousCard = 12; }
+            if (nextCard > 12) { nextCard = 0; }
+            if (previousCard < 0) { previousCard = 12; }
 
 
             var pitWhereCardCanBePlayed = gameInstance.ActualRound.CardPitsObj.Where(p => p.Value.Last().Number == nextCard || p.Value.Last().Number == previousCard).ToList();
-            if(pitWhereCardCanBePlayed.Count > 0)
+            if (pitWhereCardCanBePlayed.Count > 0)
             {
                 return pitWhereCardCanBePlayed.FirstOrDefault().Key;
             }
@@ -311,12 +315,14 @@ namespace EmptyHandGame
             return -1;
         }
 
+
+        MaterialDialog dialogExample;
         private void GetCardsFromDeck()
         {
-            if(gameInstance.ActualRound.PlayerTurnId == player.UserId)
+            if (gameInstance.ActualRound.PlayerTurnId == player.UserId)
             {
-                //if(turnStarted == false)
-                //{
+                if (turnStarted == false)
+                {
                     if (gameInstance.ActualRound.AvailableCardsObj.Count == 0)
                     {
                         var cardColor = Card.GetDisabledCard();
@@ -337,15 +343,18 @@ namespace EmptyHandGame
                         DrawPlayerHand();
                     }
                     turnStarted = true;
-                //}
-                //else
-                //{
-                //    var dialogExample = new MaterialDialog() { Title = "test", Message = "Ya has juntado las 2 cartas de tu turno." };
-                //    GrdPrincipal.Children.Add(dialogExample);
-                //}
-
-                
-
+                }
+                else
+                {
+                    if(dialogExample == null)
+                    {
+                        dialogExample = new MaterialDialog() { Message = "Ya has juntado las 2 cartas de tu turno." };
+                        dialogExample.VerticalAlignment = VerticalAlignment.Center;
+                        Grid.SetRowSpan(dialogExample, 3);
+                        GrdPrincipal.Children.Add(dialogExample);
+                        dialogExample.btnClose.Click += (sender, args) => { dialogExample = null; };
+                    }
+                }
             }
         }
 
@@ -408,7 +417,7 @@ namespace EmptyHandGame
         //    RowDeck.Children.Add(deckGrid);
         //}
 
-       
+
 
     }
 }

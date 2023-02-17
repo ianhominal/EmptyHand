@@ -10,15 +10,15 @@ namespace Service
     {
         public static User Login(string username, string password)
         {
-            string json = File.ReadAllText(@"C:\Users\ianho\source\repos\EmptyHandGame\Service\MockData\UserMock.json");
+            string json = File.ReadAllText(@"D:\Repo\EmptyHand\EmptyHandGame\Service\MockData\UserMock.json");
             var user = JsonConvert.DeserializeObject<User>(json);
             return user;
         }
 
         public static GameHeader GetActualGame(string gameGuid, int userId)
         {
-            string jsonHeader = File.ReadAllText(@"C:\Users\ianho\source\repos\EmptyHandGame\Service\MockData\GameHeaderMock.json");
-            string jsonRound = File.ReadAllText(@"C:\Users\ianho\source\repos\EmptyHandGame\Service\MockData\RoundInfoMock.json");
+            string jsonHeader = File.ReadAllText(@"D:\Repo\EmptyHand\EmptyHandGame\Service\MockData\GameHeaderMock.json");
+            string jsonRound = File.ReadAllText(@"D:\Repo\EmptyHand\EmptyHandGame\Service\MockData\RoundInfoMock.json");
 
             var header = JsonConvert.DeserializeObject<GameHeader>(jsonHeader);
             var round = JsonConvert.DeserializeObject<GameRound>(jsonRound);

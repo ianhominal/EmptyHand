@@ -1,10 +1,10 @@
 {
   "GameRoundId": "6d123582-5f5b-4b34-8ea6-7d17b391710a",
-  "AvailableCards": "C_2,C_3,C_5,C_6,C_7,C_8,C_10,C_Q,D_3,D_5,D_7,D_8,D_9,D_A,D_K,T_6,T_8,T_9,T_10,T_Q,T_K,P_A,P_2,P_3,P_4,P_7,P_8,P_10,P_J,P_K,T_3",
+  "AvailableCards": "C_2,C_3,C_5,C_6,C_7,C_8,C_10,C_Q,D_3,D_5,D_7,D_8,D_9,D_A,D_K,T_6,T_8,T_9,T_10,T_Q,T_K,P_5,P_2,P_3,P_4,P_7,P_8,P_10,P_J,P_K,T_3",
   "PlayerCards": "C_K,T_7,P_Q,T_J,D_10,C_9,T_5",
   "PlayerLifeCards": "D_2,D_4,C_4",
   "Player2Cards": "D_6,P_9,T_A,C_A,C_J,D_Q,T_2",
   "Player2LifeCards": "P_6,T_4,D_J",
   "PlayerTurnId": "3117",
-  "CardPits": "P_5"
+  "CardPits": "P_A"
 }

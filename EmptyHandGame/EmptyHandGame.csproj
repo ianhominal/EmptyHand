@@ -1,0 +1,31 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net6.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <UseWPF>true</UseWPF>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Domain\**" />
+    <Compile Remove="Service\**" />
+    <EmbeddedResource Remove="Domain\**" />
+    <EmbeddedResource Remove="Service\**" />
+    <None Remove="Domain\**" />
+    <None Remove="Service\**" />
+    <Page Remove="Domain\**" />
+    <Page Remove="Service\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MaterialDesignColors" Version="2.1.1" />
+    <PackageReference Include="MaterialDesignThemes.MahApps" Version="0.2.7" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="Domain\Domain.csproj" />
+    <ProjectReference Include="Service\Service.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -12,6 +12,8 @@ using System.Windows.Shapes;
 using Path = System.Windows.Shapes.Path;
 using static System.Net.Mime.MediaTypeNames;
 using System.Globalization;
+using System.CodeDom;
+using System.Runtime.CompilerServices;
 
 namespace Domain.Models
 {
@@ -81,6 +83,7 @@ namespace Domain.Models
                 Height = CardHeight,
                 Background = Brushes.White
             };
+
 
             Border shadow = new Border
             {

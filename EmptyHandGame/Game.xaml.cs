@@ -56,6 +56,7 @@ namespace EmptyHandGame
             deckGrid.VerticalAlignment = VerticalAlignment.Center;
 
             deckGrid.ColumnDefinitions.Add(new ColumnDefinition());
+
             deckImg = Card.CreateCardImage("Diamonds", "A", false, gameInstance.ActualRound.AvailableCards.Count() > 0);
             deckImg.Margin = new Thickness(5, 5, 20, 5);
 
@@ -249,8 +250,8 @@ namespace EmptyHandGame
                 if (cardImage.Parent == null)
                 {
                     RowPlayerHand.Children.Add(cardImage);
-                    cardImage.MouseEnter += (s, e) => { CardImage_MouseEnter(card.Number); };
-                    cardImage.MouseLeave += CardImage_MouseLeave;
+                    cardImage.MouseEnter += (s, e) => { CardImage_MouseEnter(card.Number,card.Image); };
+                    cardImage.MouseLeave += (s, e) => { CardImage_MouseLeave(card.Number, card.Image); }; 
                     cardImage.MouseLeftButtonUp += (s, e) => { HandCard_Click(cardImage, card); };
                 }
 
@@ -269,7 +270,7 @@ namespace EmptyHandGame
         private void HandCard_Click(Canvas cardImage, Card card)
         {
             var availablePit = CardCanBePlayed(card.Number);
-            if (availablePit >= 0)
+            if (availablePit >= 0 && turnStarted)
             {
                 gameInstance.ActualRound.PlayerCardsObj.Remove(card);
                 gameInstance.ActualRound.CardPitsObj[availablePit].Add(card);
@@ -277,22 +278,48 @@ namespace EmptyHandGame
                 DrawPlayerHand();
                 GenerateDeckAndPits();
             }
-        }
-
-        private void CardImage_MouseLeave(object sender, System.Windows.Input.MouseEventArgs e)
-        {
-            Mouse.OverrideCursor = null;
-        }
-
-        private void CardImage_MouseEnter(int number)
-        {
-            if (turnStarted == false)
+            else
             {
-                Mouse.OverrideCursor = Cursors.Cross;
+                var text = string.Empty;
+
+                if (availablePit == 0) text = "Esta carta no peude ser jugada en ningun pozo.";
+                if (!turnStarted) text = "Debes juntar 2 cartas del mazo antes de jugar.";
+
+                if (dialogExample == null && !string.IsNullOrEmpty(text))
+                {
+                    dialogExample = new MaterialDialog() { Message = $"{text}" };
+                    dialogExample.VerticalAlignment = VerticalAlignment.Center;
+                    Grid.SetRowSpan(dialogExample, 3);
+                    GrdPrincipal.Children.Add(dialogExample);
+                    dialogExample.btnClose.Click += (sender, args) => { dialogExample = null; };
+                }
+
             }
-            else if (CardCanBePlayed(number) >= 0)
+        }
+
+        private void CardImage_MouseLeave(int number, Canvas card)
+        {
+            bool canBePlayed = CardCanBePlayed(number) >= 0;
+            Mouse.OverrideCursor = null;
+
+            if (turnStarted && canBePlayed)
+            {
+                card.Margin = new Thickness(0, 0, 0, 0);
+            }
+        }
+
+        private void CardImage_MouseEnter(int number, Canvas card)
+        {
+            bool canBePlayed = CardCanBePlayed(number) >= 0;
+            if (turnStarted == false || canBePlayed == false)
+            {
+                Mouse.OverrideCursor = Cursors.No;
+            }
+            else
             {
                 Mouse.OverrideCursor = Cursors.Hand;
+
+                card.Margin= new Thickness(0,0,0,10);
             }
 
         }
@@ -304,7 +331,6 @@ namespace EmptyHandGame
 
             if (nextCard > 12) { nextCard = 0; }
             if (previousCard < 0) { previousCard = 12; }
-
 
             var pitWhereCardCanBePlayed = gameInstance.ActualRound.CardPitsObj.Where(p => p.Value.Last().Number == nextCard || p.Value.Last().Number == previousCard).ToList();
             if (pitWhereCardCanBePlayed.Count > 0)

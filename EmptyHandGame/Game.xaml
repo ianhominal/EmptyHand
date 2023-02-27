@@ -51,7 +51,7 @@
 
             <Grid Grid.Row="1"  Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center">
                 <StackPanel Orientation="Horizontal" Name="RowDeck">
-                    
+
                 </StackPanel>
             </Grid>
 
@@ -67,7 +67,13 @@
 
                 <Grid Grid.Row="1" Name="RowPlayerHand" Width="Auto" Height="0">
                 </Grid>
+
+
             </Grid>
+
+            
+            <Button x:Name="btnEndTurn" Grid.RowSpan="10" IsEnabled="False" Content="EndTurn" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="15" Click="BtnEndTurn_Click" Width="200" Height="50"/>
+
         </Grid>
     </ScrollViewer>
 </Window>

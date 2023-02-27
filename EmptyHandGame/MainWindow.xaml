@@ -3,7 +3,6 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:EmptyHandGame"
         mc:Ignorable="d"
         Title="Empty Hand Game"
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
@@ -13,30 +12,40 @@
         TextOptions.TextFormattingMode="Ideal" 
         TextOptions.TextRenderingMode="Auto"        
         WindowStartupLocation="CenterScreen"
+        WindowState="Normal"
         Height="600" Width="800"
-        WindowState="Maximized"
         Background="{DynamicResource MaterialDesignPaper}"
         FontFamily="{DynamicResource MaterialDesignFont}">
     <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition/>
-            <RowDefinition/>
-        </Grid.RowDefinitions>
 
-        <Grid Grid.Row="0" Name="grdMainMenu">
-            <StackPanel>
-                <materialDesign:Card Padding="32" Margin="16">
-                    <TextBlock Style="{DynamicResource MaterialDesignHeadline3TextBlock}"> Empty Hand Card Game</TextBlock>
-                </materialDesign:Card>
 
-                <Button Content="TEST IT!" Click="BtnTest_Click">
+        <StackPanel>
+            <materialDesign:Card Padding="32" Margin="16">
+                <Grid>
+                    <StackPanel HorizontalAlignment="Left">
+                        <Grid Name="imgUser" HorizontalAlignment="Center"/>
+                        <TextBlock Name="txtUserName" HorizontalAlignment="Center" FontWeight="Bold" Margin="0,10,0,0"/>
+                    </StackPanel>
+                    
+                    <TextBlock Style="{DynamicResource MaterialDesignHeadline3TextBlock}" VerticalAlignment="Center" HorizontalAlignment="Center">Empty Hand</TextBlock>
+                </Grid>
+            </materialDesign:Card>
 
-                </Button>
+
+            <StackPanel Name="StkLogin">
+                <Button Content="Login" Margin="15" Height="75" Click="Login_Click"/>
             </StackPanel>
-        </Grid>
 
-        <!--<Frame Background="Black"  Padding="3" Height="Auto"  Name="grdFrame">
 
-        </Frame>-->
+            <StackPanel Name="StkMainMenu" Visibility="Collapsed">
+                <Button Content="New Game" Margin="15" Height="75" Click="NewGame_Click"/>
+
+                <Button Content="Continue" Margin="15" Height="75" Click="Continue_Click"/>
+
+                <Button Name="btnLogout" Visibility="Collapsed" Content="Logout" Margin="15" Height="75" Click="Logout_Click"/>
+            </StackPanel>
+
+        </StackPanel>
+
     </Grid>
 </Window>

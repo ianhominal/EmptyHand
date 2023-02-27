@@ -9,10 +9,10 @@ namespace Domain.Models
     public class GameHeader
     {
         public string GameId { get; set; }
-        public string PlayerId { get; set; }
+        public decimal PlayerId { get; set; }
         public int PlayerPoints { get; set; }
         public int PlayerRoundsWins { get; set; }
-        public string Player2Id { get; set; }
+        public decimal? Player2Id { get; set; }
         public int Player2Points { get; set; }
         public int Player2RoundsWins { get; set; }
         public int RoundsCount { get; set; }

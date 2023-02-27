@@ -14,6 +14,8 @@ using static System.Net.Mime.MediaTypeNames;
 using System.Globalization;
 using System.CodeDom;
 using System.Runtime.CompilerServices;
+using MaterialDesignThemes.Wpf;
+using System.Reflection.Emit;
 
 namespace Domain.Models
 {
@@ -24,25 +26,27 @@ namespace Domain.Models
 
         public Canvas Image;
 
-        private static List<string> Suits = new List<string>() { "Diamonds", "Spades", "Clubs", "Hearts" };
+        private static List<string> Suits = new List<string>() { "D", "P", "T", "C" };
         private static List<string> Ranks = new List<string>() { "A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K" };
+
+        private static readonly int STARTHANDCARDSCOUNT = 7;
+        private static readonly int STARTLIFECARDSCOUNT = 3;
 
         private static double CardWidth = 100;
         private static double CardHeight = 140;
 
-
-        public static List<Card> GetCards(string cardsStr, bool faceUp= true)
+        public static List<Card> GetCards(string cardsStr, bool faceUp = true)
         {
             var cardList = new List<Card>();
 
             var cards = cardsStr.Split(',');
 
-            foreach( var card in cards) 
+            foreach (var card in cards)
             {
                 var cardProps = card.Split('_');
 
                 var suit = "";
-                switch(cardProps[0].ToString())
+                switch (cardProps[0].ToString())
                 {
                     case "C":
                         suit = "Hearts";
@@ -58,10 +62,11 @@ namespace Domain.Models
                         break;
                 }
 
-                cardList.Add(new Card(){ 
+                cardList.Add(new Card()
+                {
                     Suit = suit,
                     Number = Ranks.IndexOf(cardProps[1].ToString()),
-                    Image = CreateCardImage(suit, cardProps[1].ToString(),faceUp)
+                    Image = CreateCardImage(suit, cardProps[1].ToString(), faceUp)
                 });
 
             }
@@ -69,13 +74,12 @@ namespace Domain.Models
             return cardList;
         }
 
-            
+
 
         public static Canvas CreateCardImage(string suit, string rank, bool faceUp = true, bool enable = true)
         {
             int rankIndex = Ranks.IndexOf(rank);
             string color = (suit == "Hearts" || suit == "Diamonds") ? "Red" : "Black";
-            string suitChar = GetSuitChar(suit,true);
 
             Canvas cardCanvas = new Canvas
             {
@@ -99,7 +103,7 @@ namespace Domain.Models
 
             if (faceUp)
             {
-               
+
 
                 Border cardColor = new Border
                 {
@@ -200,13 +204,13 @@ namespace Domain.Models
             switch (suit)
             {
                 case "Clubs":
-                    return isUnicode ? "♣" : "C";
+                    return isUnicode ? "♣" : "T";
                 case "Diamonds":
                     return isUnicode ? "♦" : "D";
                 case "Hearts":
-                    return isUnicode ? "♥" : "H";
+                    return isUnicode ? "♥" : "C";
                 case "Spades":
-                    return isUnicode ? "♠" : "S";
+                    return isUnicode ? "♠" : "P";
                 default:
                     throw new ArgumentException("Invalid suit value.");
             }
@@ -242,21 +246,91 @@ namespace Domain.Models
         }
 
 
-        public static List<Card> GenerateDeck()
+        public static GameRound GetNewGameCards()
         {
-            var cards = new List<Card>();
+            var deck = new List<Card>();
 
-            foreach (var suit in Suits)
+
+            //creo un string con el mazo entero
+            List<string> deckStr = new List<string>();
+            foreach (var cardSuit in Suits)
             {
                 foreach (var rank in Ranks)
                 {
-                    cards.Add(new Card() { Suit = suit, Number = Ranks.IndexOf(rank), Image = CreateCardImage(suit, rank) });
-
+                    deckStr.Add($"{cardSuit}_{rank}");
                 }
             }
 
-            return cards;
+            deckStr = RandomizeList(deckStr);
+
+            string playerCards = string.Join(",", deckStr.Take(STARTHANDCARDSCOUNT).ToList());
+            foreach (var card in playerCards.Split(","))
+            {
+                deckStr.Remove(card);
+            }
+
+            string player2Cards = string.Join(",", deckStr.Take(STARTHANDCARDSCOUNT).ToList());
+            foreach (var card in player2Cards.Split(","))
+            {
+                deckStr.Remove(card);
+            }
+
+            string playerLifeCards = string.Join(",", deckStr.Take(STARTLIFECARDSCOUNT).ToList());
+            foreach (var card in playerLifeCards.Split(","))
+            {
+                deckStr.Remove(card);
+            }
+
+            string player2LifeCards = string.Join(",", deckStr.Take(STARTLIFECARDSCOUNT).ToList());
+            foreach (var card in player2LifeCards.Split(","))
+            {
+                deckStr.Remove(card);
+            }
+
+            string pit = deckStr.Take(1).First();
+            deckStr.Remove(pit);
+            
+
+            GameRound gameRound = new GameRound()
+            {
+                PlayerCards = playerCards,
+                Player2Cards = player2Cards,
+                PlayerLifeCards = playerLifeCards,
+                Player2LifeCards = player2LifeCards,
+                CardPits = pit,
+                AvailableCards = string.Join(",", deckStr.ToList())
+            };
+
+
+            return gameRound;
         }
 
+
+        public static List<string> RandomizeList(List<string> cardList)
+        {
+            Random _rand = new Random();
+            for (int i = cardList.Count - 1; i > 0; i--)
+            {
+                var k = _rand.Next(i + 1);
+                var value = cardList[k];
+                cardList[k] = cardList[i];
+                cardList[i] = value;
+            }
+            return cardList;
+        }
+
+
+        public static string ToStringList(List<Card> cardList)
+        {
+            string cardsString = "";
+            foreach (var card in cardList)
+            {
+                var cardSuit = GetSuitChar(card.Suit, false);
+
+                cardsString += $"{cardSuit}_{card.Number}";
+            }
+
+            return cardsString;
+        }
     }
 }

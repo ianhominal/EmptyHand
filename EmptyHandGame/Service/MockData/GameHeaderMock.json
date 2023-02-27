@@ -1,11 +1,11 @@
 {
   "GameId": "6b4f6ee4-6c5a-4f23-a22d-3d3c9f0fa1a2",
   "PlayerId": 3117,
-  "PlayerPoints": 20,
-  "PlayerRoundsWins": 2,
-  "Player2Id": 4040,
-  "Player2Points": 15,
-  "Player2RoundsWins": 1,
-  "RoundsCount": 3,
-  "ActualRoundId": "6d123582-5f5b-4b34-8ea6-7d17b391710a"
+  "PlayerPoints": 0,
+  "PlayerRoundsWins": 0,
+  "Player2Id": 4040,//4040,
+  "Player2Points": 0,
+  "Player2RoundsWins": 0,
+  "RoundsCount": 0,
+  "ActualRoundId": null,//"6d123582-5f5b-4b34-8ea6-7d17b391710a"
 }

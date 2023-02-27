@@ -14,7 +14,7 @@ namespace Domain.Models
         public string PlayerLifeCards { get; set; }
         public string Player2Cards { get; set; }
         public string Player2LifeCards { get; set; }
-        public int PlayerTurnId { get; set; }
+        public decimal? PlayerTurnId { get; set; }
         public string CardPits { get; set; }
 
 

@@ -33,9 +33,8 @@ namespace EmptyHandGame
         {
             InitializeComponent();
 
-            player = GameService.Login("", "");
 
-            gameInstance = GameService.GetActualGame("", player.UserId);
+            gameInstance = GameService.GetGameState("", player.UserId);
 
             DrawPlayerHand();
             DrawPlayerLifeCards();
@@ -176,17 +175,10 @@ namespace EmptyHandGame
 
             var lifeCards = gameInstance.ActualRound.PlayerLifeCardsObj;
 
-            //for (int i = 0; i <= 3; i++)
-            //{
-            //    handGrid.RowDefinitions.Add(new RowDefinition());
-            //}
-
-            //defino las columnas
             var cardCount = 0;
             foreach (var card in lifeCards)
             {
                 playerLifeGrid.ColumnDefinitions.Add(new ColumnDefinition());
-
 
                 var cardImage = card.Image;
                 cardImage.Margin = new Thickness(5);
@@ -198,6 +190,12 @@ namespace EmptyHandGame
             }
 
             RowPlayerLifes.Children.Add(playerLifeGrid);
+
+        }
+
+        private void BtnEndTurn_Click(object sender, RoutedEventArgs e)
+        {
+            throw new NotImplementedException();
         }
 
         private void DrawPlayerHand()
@@ -277,12 +275,14 @@ namespace EmptyHandGame
 
                 DrawPlayerHand();
                 GenerateDeckAndPits();
+
+                btnEndTurn.IsEnabled = true;
             }
             else
             {
                 var text = string.Empty;
 
-                if (availablePit == 0) text = "Esta carta no peude ser jugada en ningun pozo.";
+                if (availablePit == 0) text = "Esta carta no puede ser jugada en ningun pozo.";
                 if (!turnStarted) text = "Debes juntar 2 cartas del mazo antes de jugar.";
 
                 if (dialogExample == null && !string.IsNullOrEmpty(text))
@@ -293,7 +293,6 @@ namespace EmptyHandGame
                     GrdPrincipal.Children.Add(dialogExample);
                     dialogExample.btnClose.Click += (sender, args) => { dialogExample = null; };
                 }
-
             }
         }
 

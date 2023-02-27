@@ -1,0 +1,166 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="3.0" xmlns:edmx="http://schemas.microsoft.com/ado/2009/11/edmx">
+  <!-- EF Runtime content -->
+  <edmx:Runtime>
+    <!-- SSDL content -->
+    <edmx:StorageModels>
+      <Schema Namespace="EmptyHandDBModel.Store" Provider="System.Data.SqlClient" ProviderManifestToken="2012" Alias="Self" xmlns:store="http://schemas.microsoft.com/ado/2007/12/edm/EntityStoreSchemaGenerator" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm/ssdl">
+        <EntityType Name="GameHeaders">
+          <Key>
+            <PropertyRef Name="GameId" />
+          </Key>
+          <Property Name="GameId" Type="uniqueidentifier" Nullable="false" />
+          <Property Name="PlayerId" Type="nvarchar" MaxLength="50" Nullable="false" />
+          <Property Name="Player2Id" Type="nvarchar" MaxLength="50" />
+          <Property Name="PlayerPoints" Type="int" Nullable="false" />
+          <Property Name="PlayerRoundsWins" Type="int" Nullable="false" />
+          <Property Name="Player2Points" Type="int" Nullable="false" />
+          <Property Name="Player2RoundsWins" Type="int" Nullable="false" />
+          <Property Name="RoundsCount" Type="int" Nullable="false" />
+          <Property Name="ActualRoundId" Type="uniqueidentifier" Nullable="false" />
+        </EntityType>
+        <EntityType Name="GameRounds">
+          <Key>
+            <PropertyRef Name="GameRoundId" />
+          </Key>
+          <Property Name="GameRoundId" Type="uniqueidentifier" Nullable="false" />
+          <Property Name="AvailableCards" Type="nvarchar(max)" Nullable="false" />
+          <Property Name="PlayerCards" Type="nvarchar(max)" Nullable="false" />
+          <Property Name="PlayerLifeCards" Type="nvarchar(max)" Nullable="false" />
+          <Property Name="Player2Cards" Type="nvarchar(max)" Nullable="false" />
+          <Property Name="Player2LifeCards" Type="nvarchar(max)" Nullable="false" />
+          <Property Name="PlayerTurnId" Type="nvarchar" MaxLength="50" />
+          <Property Name="CardPits" Type="nvarchar(max)" Nullable="false" />
+        </EntityType>
+        <Association Name="FK_GameActualRound">
+          <End Role="GameRounds" Type="Self.GameRounds" Multiplicity="1" />
+          <End Role="GameHeaders" Type="Self.GameHeaders" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="GameRounds">
+              <PropertyRef Name="GameRoundId" />
+            </Principal>
+            <Dependent Role="GameHeaders">
+              <PropertyRef Name="ActualRoundId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <EntityContainer Name="EmptyHandDBModelStoreContainer">
+          <EntitySet Name="GameHeaders" EntityType="Self.GameHeaders" Schema="dbo" store:Type="Tables" />
+          <EntitySet Name="GameRounds" EntityType="Self.GameRounds" Schema="dbo" store:Type="Tables" />
+          <AssociationSet Name="FK_GameActualRound" Association="Self.FK_GameActualRound">
+            <End Role="GameRounds" EntitySet="GameRounds" />
+            <End Role="GameHeaders" EntitySet="GameHeaders" />
+          </AssociationSet>
+        </EntityContainer>
+      </Schema>
+    </edmx:StorageModels>
+    <!-- CSDL content -->
+    <edmx:ConceptualModels>
+      <Schema Namespace="EmptyHandDBModel" Alias="Self" annotation:UseStrongSpatialTypes="false" xmlns:annotation="http://schemas.microsoft.com/ado/2009/02/edm/annotation" xmlns:customannotation="http://schemas.microsoft.com/ado/2013/11/edm/customannotation" xmlns="http://schemas.microsoft.com/ado/2009/11/edm">
+        <EntityType Name="GameHeader">
+          <Key>
+            <PropertyRef Name="GameId" />
+          </Key>
+          <Property Name="GameId" Type="Guid" Nullable="false" />
+          <Property Name="PlayerId" Type="String" MaxLength="50" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="Player2Id" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="PlayerPoints" Type="Int32" Nullable="false" />
+          <Property Name="PlayerRoundsWins" Type="Int32" Nullable="false" />
+          <Property Name="Player2Points" Type="Int32" Nullable="false" />
+          <Property Name="Player2RoundsWins" Type="Int32" Nullable="false" />
+          <Property Name="RoundsCount" Type="Int32" Nullable="false" />
+          <Property Name="ActualRoundId" Type="Guid" Nullable="false" />
+          <NavigationProperty Name="GameRound" Relationship="Self.FK_GameActualRound" FromRole="GameHeaders" ToRole="GameRounds" />
+        </EntityType>
+        <EntityType Name="GameRound">
+          <Key>
+            <PropertyRef Name="GameRoundId" />
+          </Key>
+          <Property Name="GameRoundId" Type="Guid" Nullable="false" />
+          <Property Name="AvailableCards" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="PlayerCards" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="PlayerLifeCards" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="Player2Cards" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="Player2LifeCards" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" Nullable="false" />
+          <Property Name="PlayerTurnId" Type="String" MaxLength="50" FixedLength="false" Unicode="true" />
+          <Property Name="CardPits" Type="String" MaxLength="Max" FixedLength="false" Unicode="true" Nullable="false" />
+          <NavigationProperty Name="GameHeaders" Relationship="Self.FK_GameActualRound" FromRole="GameRounds" ToRole="GameHeaders" />
+        </EntityType>
+        <Association Name="FK_GameActualRound">
+          <End Role="GameRounds" Type="Self.GameRound" Multiplicity="1" />
+          <End Role="GameHeaders" Type="Self.GameHeader" Multiplicity="*" />
+          <ReferentialConstraint>
+            <Principal Role="GameRounds">
+              <PropertyRef Name="GameRoundId" />
+            </Principal>
+            <Dependent Role="GameHeaders">
+              <PropertyRef Name="ActualRoundId" />
+            </Dependent>
+          </ReferentialConstraint>
+        </Association>
+        <EntityContainer Name="EmptyHandDBEntities" annotation:LazyLoadingEnabled="true">
+          <EntitySet Name="GameHeaders" EntityType="Self.GameHeader" />
+          <EntitySet Name="GameRounds" EntityType="Self.GameRound" />
+          <AssociationSet Name="FK_GameActualRound" Association="Self.FK_GameActualRound">
+            <End Role="GameRounds" EntitySet="GameRounds" />
+            <End Role="GameHeaders" EntitySet="GameHeaders" />
+          </AssociationSet>
+        </EntityContainer>
+      </Schema>
+    </edmx:ConceptualModels>
+    <!-- C-S mapping content -->
+    <edmx:Mappings>
+      <Mapping Space="C-S" xmlns="http://schemas.microsoft.com/ado/2009/11/mapping/cs">
+        <EntityContainerMapping StorageEntityContainer="EmptyHandDBModelStoreContainer" CdmEntityContainer="EmptyHandDBEntities">
+          <EntitySetMapping Name="GameHeaders">
+            <EntityTypeMapping TypeName="EmptyHandDBModel.GameHeader">
+              <MappingFragment StoreEntitySet="GameHeaders">
+                <ScalarProperty Name="GameId" ColumnName="GameId" />
+                <ScalarProperty Name="PlayerId" ColumnName="PlayerId" />
+                <ScalarProperty Name="Player2Id" ColumnName="Player2Id" />
+                <ScalarProperty Name="PlayerPoints" ColumnName="PlayerPoints" />
+                <ScalarProperty Name="PlayerRoundsWins" ColumnName="PlayerRoundsWins" />
+                <ScalarProperty Name="Player2Points" ColumnName="Player2Points" />
+                <ScalarProperty Name="Player2RoundsWins" ColumnName="Player2RoundsWins" />
+                <ScalarProperty Name="RoundsCount" ColumnName="RoundsCount" />
+                <ScalarProperty Name="ActualRoundId" ColumnName="ActualRoundId" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+          <EntitySetMapping Name="GameRounds">
+            <EntityTypeMapping TypeName="EmptyHandDBModel.GameRound">
+              <MappingFragment StoreEntitySet="GameRounds">
+                <ScalarProperty Name="GameRoundId" ColumnName="GameRoundId" />
+                <ScalarProperty Name="AvailableCards" ColumnName="AvailableCards" />
+                <ScalarProperty Name="PlayerCards" ColumnName="PlayerCards" />
+                <ScalarProperty Name="PlayerLifeCards" ColumnName="PlayerLifeCards" />
+                <ScalarProperty Name="Player2Cards" ColumnName="Player2Cards" />
+                <ScalarProperty Name="Player2LifeCards" ColumnName="Player2LifeCards" />
+                <ScalarProperty Name="PlayerTurnId" ColumnName="PlayerTurnId" />
+                <ScalarProperty Name="CardPits" ColumnName="CardPits" />
+              </MappingFragment>
+            </EntityTypeMapping>
+          </EntitySetMapping>
+        </EntityContainerMapping>
+      </Mapping>
+    </edmx:Mappings>
+  </edmx:Runtime>
+  <!-- EF Designer content (DO NOT EDIT MANUALLY BELOW HERE) -->
+  <Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
+    <Connection>
+      <DesignerInfoPropertySet>
+        <DesignerProperty Name="MetadataArtifactProcessing" Value="EmbedInOutputAssembly" />
+      </DesignerInfoPropertySet>
+    </Connection>
+    <Options>
+      <DesignerInfoPropertySet>
+        <DesignerProperty Name="ValidateOnBuild" Value="true" />
+        <DesignerProperty Name="EnablePluralization" Value="true" />
+        <DesignerProperty Name="IncludeForeignKeysInModel" Value="true" />
+        <DesignerProperty Name="UseLegacyProvider" Value="false" />
+      </DesignerInfoPropertySet>
+    </Options>
+    <!-- Diagram content (shape and connector positions) -->
+    <Diagrams></Diagrams>
+  </Designer>
+</edmx:Edmx>

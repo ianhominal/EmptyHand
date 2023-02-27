@@ -19,11 +19,14 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Google.Apis.Auth" Version="1.60.0" />
+    <PackageReference Include="Google.Apis.PeopleService.v1" Version="1.60.0.2924" />
     <PackageReference Include="MaterialDesignColors" Version="2.1.1" />
     <PackageReference Include="MaterialDesignThemes.MahApps" Version="0.2.7" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\DataService\DataService.csproj" />
     <ProjectReference Include="Domain\Domain.csproj" />
     <ProjectReference Include="Service\Service.csproj" />
   </ItemGroup>

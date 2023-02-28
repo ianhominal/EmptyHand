@@ -76,7 +76,7 @@ namespace EmptyHandGame
                 return;
             }
 
-            if(gameState.Player2Id == null)
+            if(gameState.GameHeader.Player2Id == null)
             {
                 ShowDialog("Esperando que el player 2 acepte la partida.");
                 return;

@@ -59,7 +59,7 @@ namespace EmptyHandGame
 
             deckGrid.ColumnDefinitions.Add(new ColumnDefinition());
 
-            deckImg = Card.CreateCardImage("Diamonds", "A", false, gameState.ActualRound.AvailableCards.Count() > 0);
+            deckImg = Card.CreateCardImage("Diamonds", "A", false, gameState.ActualGameRound?.AvailableCardsObj.Count > 0);
             deckImg.Margin = new Thickness(5, 5, 20, 5);
 
             deckImg.MouseLeftButtonUp += (s, e) => { GetCardsFromDeck(); };
@@ -71,7 +71,7 @@ namespace EmptyHandGame
 
             var cardCount = 1;
 
-            foreach (var pit in gameState.ActualRound.CardPitsObj)
+            foreach (var pit in gameState.ActualGameRound.CardPitsObj)
             {
                 deckGrid.ColumnDefinitions.Add(new ColumnDefinition());
 
@@ -110,7 +110,7 @@ namespace EmptyHandGame
             handGrid.HorizontalAlignment = HorizontalAlignment.Center;
             handGrid.VerticalAlignment = VerticalAlignment.Bottom;
 
-            var handCards = gameState.ActualRound.Player2CardsObj;
+            var handCards = gameState.ActualGameRound.Player2CardsObj;
 
             //for (int i = 0; i <= 3; i++)
             //{
@@ -143,7 +143,7 @@ namespace EmptyHandGame
             playerLifeGrid.HorizontalAlignment = HorizontalAlignment.Right;
             playerLifeGrid.VerticalAlignment = VerticalAlignment.Bottom;
 
-            var lifeCards = gameState.ActualRound.Player2LifeCardsObj;
+            var lifeCards = gameState.ActualGameRound.Player2LifeCardsObj;
 
             //for (int i = 0; i <= 3; i++)
             //{
@@ -176,7 +176,7 @@ namespace EmptyHandGame
             playerLifeGrid.HorizontalAlignment = HorizontalAlignment.Left;
             playerLifeGrid.VerticalAlignment = VerticalAlignment.Bottom;
 
-            var lifeCards = gameState.ActualRound.PlayerLifeCardsObj;
+            var lifeCards = gameState.ActualGameRound.PlayerLifeCardsObj;
 
             var cardCount = 0;
             foreach (var card in lifeCards)
@@ -210,7 +210,7 @@ namespace EmptyHandGame
 
             var maxColums = 20;
 
-            var handCards = gameState.ActualRound.PlayerCardsObj;
+            var handCards = gameState.ActualGameRound.PlayerCardsObj;
 
             RowPlayerHand.Height = ((int)(handCards.Count / maxColums) + 1) * 150;
             //this.Height = RowEnemy.Height + RowDeck.Height + RowPlayerHand.Height;
@@ -273,8 +273,8 @@ namespace EmptyHandGame
             var availablePit = CardCanBePlayed(card.Number);
             if (availablePit >= 0 && turnStarted)
             {
-                gameState.ActualRound.PlayerCardsObj.Remove(card);
-                gameState.ActualRound.CardPitsObj[availablePit].Add(card);
+                gameState.ActualGameRound.PlayerCardsObj.Remove(card);
+                gameState.ActualGameRound.CardPitsObj[availablePit].Add(card);
 
                 DrawPlayerHand();
                 GenerateDeckAndPits();
@@ -334,7 +334,7 @@ namespace EmptyHandGame
             if (nextCard > 12) { nextCard = 0; }
             if (previousCard < 0) { previousCard = 12; }
 
-            var pitWhereCardCanBePlayed = gameState.ActualRound.CardPitsObj.Where(p => p.Value.Last().Number == nextCard || p.Value.Last().Number == previousCard).ToList();
+            var pitWhereCardCanBePlayed = gameState.ActualGameRound.CardPitsObj.Where(p => p.Value.Last().Number == nextCard || p.Value.Last().Number == previousCard).ToList();
             if (pitWhereCardCanBePlayed.Count > 0)
             {
                 return pitWhereCardCanBePlayed.FirstOrDefault().Key;
@@ -347,11 +347,11 @@ namespace EmptyHandGame
         MaterialDialog dialogExample;
         private void GetCardsFromDeck()
         {
-            if (gameState.ActualRound.PlayerTurnId == userId)
+            if (gameState.ActualGameRound.GameRound.PlayerTurnId == userId)
             {
                 if (turnStarted == false)
                 {
-                    if (gameState.ActualRound.AvailableCardsObj.Count == 0)
+                    if (gameState.ActualGameRound.AvailableCardsObj.Count == 0)
                     {
                         var cardColor = Card.GetDisabledCard();
                         deckImg.Children.Add(cardColor);
@@ -359,13 +359,13 @@ namespace EmptyHandGame
                     }
                     else
                     {
-                        var cards = gameState.ActualRound.AvailableCardsObj.Take(2).ToList();
+                        var cards = gameState.ActualGameRound.AvailableCardsObj.Take(2).ToList();
 
-                        gameState.ActualRound.PlayerCardsObj.AddRange(cards);
+                        gameState.ActualGameRound.PlayerCardsObj.AddRange(cards);
 
                         foreach (var card in cards)
                         {
-                            gameState.ActualRound.AvailableCardsObj.Remove(card);
+                            gameState.ActualGameRound.AvailableCardsObj.Remove(card);
                         }
 
                         DrawPlayerHand();

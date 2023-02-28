@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<edmx:Edmx Version="3.0" xmlns:edmx="http://schemas.microsoft.com/ado/2009/11/edmx">
+ <!-- EF Designer content (DO NOT EDIT MANUALLY BELOW HERE) -->
+  <edmx:Designer xmlns="http://schemas.microsoft.com/ado/2009/11/edmx">
+    <!-- Diagram content (shape and connector positions) -->
+    <edmx:Diagrams>
+      <Diagram DiagramId="f6df4884ed8743cfb229c59284601074" Name="Diagram1">
+        <EntityTypeShape EntityType="EmptyHandDBModel.GameHeader" Width="1.5" PointX="10" PointY="2.625" />
+        <EntityTypeShape EntityType="EmptyHandDBModel.GameRound" Width="1.5" PointX="7.75" PointY="2.75" />
+        <AssociationConnector Association="EmptyHandDBModel.FK_GameHeader_GameRound" />
+      </Diagram>
+    </edmx:Diagrams>
+  </edmx:Designer>
+</edmx:Edmx>

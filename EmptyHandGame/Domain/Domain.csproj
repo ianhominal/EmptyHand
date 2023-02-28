@@ -10,4 +10,8 @@
     <PackageReference Include="MaterialDesignThemes.MahApps" Version="0.2.7" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\DataService\DataService.csproj" />
+  </ItemGroup>
+
 </Project>

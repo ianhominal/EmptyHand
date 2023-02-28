@@ -1,21 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Media.Imaging;
 using System.Windows.Media;
 using System.Windows.Shapes;
 using Path = System.Windows.Shapes.Path;
-using static System.Net.Mime.MediaTypeNames;
 using System.Globalization;
-using System.CodeDom;
-using System.Runtime.CompilerServices;
-using MaterialDesignThemes.Wpf;
-using System.Reflection.Emit;
+using DataService;
 
 namespace Domain.Models
 {
@@ -26,14 +18,14 @@ namespace Domain.Models
 
         public Canvas Image;
 
-        private static List<string> Suits = new List<string>() { "D", "P", "T", "C" };
-        private static List<string> Ranks = new List<string>() { "A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K" };
+        public static List<string> Suits = new List<string>() { "D", "P", "T", "C" };
+        public static List<string> Ranks = new List<string>() { "A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K" };
 
-        private static readonly int STARTHANDCARDSCOUNT = 7;
-        private static readonly int STARTLIFECARDSCOUNT = 3;
+        public static readonly int STARTHANDCARDSCOUNT = 7;
+        public static readonly int STARTLIFECARDSCOUNT = 3;
 
-        private static double CardWidth = 100;
-        private static double CardHeight = 140;
+        public static double CardWidth = 100;
+        public static double CardHeight = 140;
 
         public static List<Card> GetCards(string cardsStr, bool faceUp = true)
         {
@@ -73,8 +65,6 @@ namespace Domain.Models
 
             return cardList;
         }
-
-
 
         public static Canvas CreateCardImage(string suit, string rank, bool faceUp = true, bool enable = true)
         {
@@ -197,8 +187,6 @@ namespace Domain.Models
             return cardColor;
         }
 
-
-
         private static string GetSuitChar(string suit, bool isUnicode)
         {
             switch (suit)
@@ -245,67 +233,6 @@ namespace Domain.Models
             return path;
         }
 
-
-        public static GameRound GetNewGameCards()
-        {
-            var deck = new List<Card>();
-
-
-            //creo un string con el mazo entero
-            List<string> deckStr = new List<string>();
-            foreach (var cardSuit in Suits)
-            {
-                foreach (var rank in Ranks)
-                {
-                    deckStr.Add($"{cardSuit}_{rank}");
-                }
-            }
-
-            deckStr = RandomizeList(deckStr);
-
-            string playerCards = string.Join(",", deckStr.Take(STARTHANDCARDSCOUNT).ToList());
-            foreach (var card in playerCards.Split(","))
-            {
-                deckStr.Remove(card);
-            }
-
-            string player2Cards = string.Join(",", deckStr.Take(STARTHANDCARDSCOUNT).ToList());
-            foreach (var card in player2Cards.Split(","))
-            {
-                deckStr.Remove(card);
-            }
-
-            string playerLifeCards = string.Join(",", deckStr.Take(STARTLIFECARDSCOUNT).ToList());
-            foreach (var card in playerLifeCards.Split(","))
-            {
-                deckStr.Remove(card);
-            }
-
-            string player2LifeCards = string.Join(",", deckStr.Take(STARTLIFECARDSCOUNT).ToList());
-            foreach (var card in player2LifeCards.Split(","))
-            {
-                deckStr.Remove(card);
-            }
-
-            string pit = deckStr.Take(1).First();
-            deckStr.Remove(pit);
-            
-
-            GameRound gameRound = new GameRound()
-            {
-                PlayerCards = playerCards,
-                Player2Cards = player2Cards,
-                PlayerLifeCards = playerLifeCards,
-                Player2LifeCards = player2LifeCards,
-                CardPits = pit,
-                AvailableCards = string.Join(",", deckStr.ToList())
-            };
-
-
-            return gameRound;
-        }
-
-
         public static List<string> RandomizeList(List<string> cardList)
         {
             Random _rand = new Random();
@@ -318,7 +245,6 @@ namespace Domain.Models
             }
             return cardList;
         }
-
 
         public static string ToStringList(List<Card> cardList)
         {

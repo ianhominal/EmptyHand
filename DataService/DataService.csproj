@@ -35,10 +35,10 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
-      <HintPath>..\EmptyHandGame\packages\EntityFramework.6.4.4\lib\net45\EntityFramework.dll</HintPath>
+      <HintPath>..\EmptyHandGame\packages\EntityFramework.6.2.0\lib\net45\EntityFramework.dll</HintPath>
     </Reference>
     <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
-      <HintPath>..\EmptyHandGame\packages\EntityFramework.6.4.4\lib\net45\EntityFramework.SqlServer.dll</HintPath>
+      <HintPath>..\EmptyHandGame\packages\EntityFramework.6.2.0\lib\net45\EntityFramework.SqlServer.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
@@ -54,37 +54,37 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Connection.cs" />
-    <Compile Include="GameDBModel.Context.cs">
+    <Compile Include="EmptyHandDBModel.Context.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
-      <DependentUpon>GameDBModel.Context.tt</DependentUpon>
+      <DependentUpon>EmptyHandDBModel.Context.tt</DependentUpon>
     </Compile>
-    <Compile Include="GameDBModel.cs">
+    <Compile Include="EmptyHandDBModel.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
-      <DependentUpon>GameDBModel.tt</DependentUpon>
+      <DependentUpon>EmptyHandDBModel.tt</DependentUpon>
     </Compile>
-    <Compile Include="GameDBModel.Designer.cs">
+    <Compile Include="EmptyHandDBModel.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
-      <DependentUpon>GameDBModel.edmx</DependentUpon>
+      <DependentUpon>EmptyHandDBModel.edmx</DependentUpon>
     </Compile>
     <Compile Include="GameHeader.cs">
-      <DependentUpon>GameDBModel.tt</DependentUpon>
+      <DependentUpon>EmptyHandDBModel.tt</DependentUpon>
     </Compile>
     <Compile Include="GameRound.cs">
-      <DependentUpon>GameDBModel.tt</DependentUpon>
+      <DependentUpon>EmptyHandDBModel.tt</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
-    <EntityDeploy Include="GameDBModel.edmx">
+    <EntityDeploy Include="EmptyHandDBModel.edmx">
       <Generator>EntityModelCodeGenerator</Generator>
-      <LastGenOutput>GameDBModel.Designer.cs</LastGenOutput>
+      <LastGenOutput>EmptyHandDBModel.Designer.cs</LastGenOutput>
     </EntityDeploy>
-    <None Include="GameDBModel.edmx.diagram">
-      <DependentUpon>GameDBModel.edmx</DependentUpon>
+    <None Include="EmptyHandDBModel.edmx.diagram">
+      <DependentUpon>EmptyHandDBModel.edmx</DependentUpon>
     </None>
     <None Include="packages.config" />
   </ItemGroup>
@@ -92,16 +92,17 @@
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="GameDBModel.Context.tt">
+    <Content Include="EmptyHandDBModel.Context.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
-      <DependentUpon>GameDBModel.edmx</DependentUpon>
-      <LastGenOutput>GameDBModel.Context.cs</LastGenOutput>
+      <DependentUpon>EmptyHandDBModel.edmx</DependentUpon>
+      <LastGenOutput>EmptyHandDBModel.Context.cs</LastGenOutput>
     </Content>
-    <Content Include="GameDBModel.tt">
+    <Content Include="EmptyHandDBModel.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
-      <DependentUpon>GameDBModel.edmx</DependentUpon>
-      <LastGenOutput>GameDBModel.cs</LastGenOutput>
+      <DependentUpon>EmptyHandDBModel.edmx</DependentUpon>
+      <LastGenOutput>EmptyHandDBModel.cs</LastGenOutput>
     </Content>
+    <Content Include="SQL DATABASE CREATE.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

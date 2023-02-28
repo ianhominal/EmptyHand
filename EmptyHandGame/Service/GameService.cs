@@ -1,80 +1,149 @@
+using DataService;
 using Domain.Models;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Security.Policy;
 
 namespace Service
 {
     public class GameService
     {
-        public static GameHeader GetGameState(string gameGuid, int userId)
+        public static GameHeaderModel? GetGameState(string gameGuid, string userId, Context db)
         {
-            string jsonHeader = File.ReadAllText(@"C:\Repo\EmptyHand\EmptyHand\EmptyHandGame\Service\MockData\GameHeaderMock.json");
-            string jsonRound = File.ReadAllText(@"C:\Repo\EmptyHand\EmptyHand\EmptyHandGame\Service\MockData\RoundInfoMock.json");
+            var gameHeader = db.GetGameHeader(gameGuid);
 
-            var header = JsonConvert.DeserializeObject<GameHeader>(jsonHeader);
-            GameRound round;
-            if (!string.IsNullOrEmpty(header.ActualRoundId))
+            if (gameHeader == null) return null;
+
+            var gameState = new GameHeaderModel(gameHeader);
+
+            //si la partida tiene player 1 y 2
+            if(gameState.GameHeader.Player2Id != null)
             {
-                //si el header tiene un actual round la buscamos (partida ya iniciada)
-                round = JsonConvert.DeserializeObject<GameRound>(jsonRound);
+                //partida pertenece a otros players
+                if (gameState.GameHeader.Player2Id != userId && gameState.GameHeader.PlayerId != userId) return null;
             }
-            else if(header.Player2Id != null)
+            else if(gameState.GameHeader.PlayerId != userId)
+            {
+                //si esta disponible el player 2  y no es el mismo que el player 1 entonces lo asigna
+                gameState.GameHeader.Player2Id = userId;
+                //guardar este cambio
+                db.SaveChanges();
+            }
+
+            //si esta creado el juego pero aun no tiene un GameRound
+            if (gameState.GameHeader.GameRound == null)
             {
                 //si no tiene pero tiene player2ID entonces debería empezar un nuevo game
-                round = Card.GetNewGameCards();
-                round.GameRoundId = Guid.NewGuid().ToString();
+                if (gameState.GameHeader.Player2Id != null)
+                {
+                    //obtengo las cartas para la ronda
+                    var newRound = GetNewGameCards();
 
-                int playerTurn = new Random().Next(1,2);
-                round.PlayerTurnId = playerTurn == 1? header.PlayerId : header.Player2Id;
+                    //agrego al entity header los datos de la ronda creada
+                    gameState.GameHeader.GameRoundId = newRound.GameRoundId;
+                    gameState.GameHeader.GameRound = newRound;
 
-                header.ActualRoundId = round.GameRoundId;
-                
-                //guardar este cambio
-            }
-            else
-            {
-                //esperando que el player2 acepte
-                return header;
-            }
+                    //decido al azar que player empieza la partida
+                    var playerTurnId = new Random().Next(1, 2) == 1 ? gameState.GameHeader.PlayerId : gameState.GameHeader.Player2Id;
+                    newRound.PlayerTurnId = playerTurnId;
 
-            round.PlayerCardsObj = Card.GetCards(round.PlayerCards);
-            round.Player2CardsObj = Card.GetCards(round.Player2Cards, false);
-            round.PlayerLifeCardsObj = Card.GetCards(round.PlayerLifeCards, false);
-            round.Player2LifeCardsObj = Card.GetCards(round.Player2LifeCards, false);
-            round.AvailableCardsObj = Card.GetCards(round.AvailableCards);
-            var pitsSplit = round.CardPits.Split('|');
-            var pitCount = 0;
-
-            round.CardPitsObj = new Dictionary<int, List<Card>>();
-            foreach (var pit in pitsSplit)
-            {
-                round.CardPitsObj[pitCount] = Card.GetCards(pit);
-                pitCount++;
+                    //obtnego el modelo que contendra los objetos de las cartas
+                    gameState.GameHeader.GameRound = newRound;
+                    gameState.ActualGameRound = new GameRoundModel(newRound);
+                    //guardar este cambio
+                    db.SaveChanges();
+                }
+                else
+                {
+                    //esperando que el player2 acepte
+                    return gameState;
+                }
             }
 
-            header.ActualRound = round;
 
-            return header;
+            return gameState;
         }
 
-        public static DataService.GameHeader CreateNewGame(string userId, DataService.EmptyHandDBEntities db)
-        {
 
-            DataService.GameHeader gH = new DataService.GameHeader();
-            gH.GameId = Guid.NewGuid().ToString();
+        public static GameRound GetNewGameCards()
+        {
+            var deck = new List<Card>();
+
+
+            //creo un string con el mazo entero
+            List<string> deckStr = new List<string>();
+            foreach (var cardSuit in Card.Suits)
+            {
+                foreach (var rank in Card.Ranks)
+                {
+                    deckStr.Add($"{cardSuit}_{rank}");
+                }
+            }
+
+            deckStr = Card.RandomizeList(deckStr);
+
+            string playerCards = string.Join(",", deckStr.Take(Card.STARTHANDCARDSCOUNT).ToList());
+            foreach (var card in playerCards.Split(","))
+            {
+                deckStr.Remove(card);
+            }
+
+            string player2Cards = string.Join(",", deckStr.Take(Card.STARTHANDCARDSCOUNT).ToList());
+            foreach (var card in player2Cards.Split(","))
+            {
+                deckStr.Remove(card);
+            }
+
+            string playerLifeCards = string.Join(",", deckStr.Take(Card.STARTLIFECARDSCOUNT).ToList());
+            foreach (var card in playerLifeCards.Split(","))
+            {
+                deckStr.Remove(card);
+            }
+
+            string player2LifeCards = string.Join(",", deckStr.Take(Card.STARTLIFECARDSCOUNT).ToList());
+            foreach (var card in player2LifeCards.Split(","))
+            {
+                deckStr.Remove(card);
+            }
+
+            string pit = deckStr.Take(1).First();
+            deckStr.Remove(pit);
+
+
+
+            GameRound gameRound = new GameRound()
+            {
+                GameRoundId = Guid.NewGuid(),
+                PlayerCards = playerCards,
+                Player2Cards = player2Cards,
+                PlayerLifeCards = playerLifeCards,
+                Player2LifeCards = player2LifeCards,
+                CardPits = pit,
+                AvailableCards = string.Join(",", deckStr.ToList()),
+                
+            };
+
+
+            return gameRound;
+        }
+
+
+
+        public static GameHeader CreateNewGame(string userId, DataService.Context db)
+        {
+            GameHeader gH = new GameHeader();
+            gH.GameId = Guid.NewGuid();
             gH.PlayerId = userId;
             gH.PlayerRoundsWins = 0;
             gH.Player2RoundsWins = 0;
             gH.RoundsCount = 0;
             gH.PlayerPoints = 0;
             gH.Player2Points = 0;
-            gH.ActualRound = null;
 
-            //aca habria que guardar en la bd y esperar que acepte el otro player
-            db.GameHeaders.Add(gH);
-            db.SaveChanges();
+            db.AddGameHeader(gH);
 
             return gH;
         }

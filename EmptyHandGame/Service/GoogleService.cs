@@ -22,7 +22,7 @@ namespace Service
 
         public async Task<Person> GoogleLogin()
         {
-            using (var stream = new FileStream(@"C:\Repo\EmptyHand\EmptyHand\EmptyHandGame\Service\client_secrets.json", FileMode.Open, FileAccess.Read))
+            using (var stream = new FileStream("client_secrets.json", FileMode.Open, FileAccess.Read))
             {
                 credential = await GoogleWebAuthorizationBroker.AuthorizeAsync(
                     GoogleClientSecrets.FromStream(stream).Secrets,
@@ -53,9 +53,9 @@ namespace Service
         }
 
 
-        public async Task GoogleLogout()
+        public void GoogleLogout()
         {
-            if(credential != null)
+            if (credential != null)
             {
                 // Invalidar la sesión actual
                 credential?.RevokeTokenAsync(CancellationToken.None).Wait();

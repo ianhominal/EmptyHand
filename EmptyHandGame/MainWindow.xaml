@@ -16,7 +16,7 @@
         Height="600" Width="800"
         Background="{DynamicResource MaterialDesignPaper}"
         FontFamily="{DynamicResource MaterialDesignFont}">
-    <Grid>
+    <Grid Name="GrdPrincipal">
 
 
         <StackPanel>
@@ -37,10 +37,19 @@
             </StackPanel>
 
 
-            <StackPanel Name="StkMainMenu" Visibility="Collapsed">
+            <StackPanel Name="StkMainMenu" Visibility="Collapsed" >
                 <Button Content="New Game" Margin="15" Height="75" Click="NewGame_Click"/>
 
-                <Button Content="Continue" Margin="15" Height="75" Click="Continue_Click"/>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition/>
+                        <RowDefinition Height="0.3*"/>
+                    </Grid.RowDefinitions>
+                    
+                    <Button Content="Continue" Margin="15" Height="75" Click="Continue_Click"/>
+                    <TextBox Grid.Row="1" FontSize="20" x:Name="txtGameCode" ToolTip="Game Code Here" BorderThickness="2" Margin="15,0,15,15" />
+
+                </Grid>
 
                 <Button Name="btnLogout" Visibility="Collapsed" Content="Logout" Margin="15" Height="75" Click="Logout_Click"/>
             </StackPanel>

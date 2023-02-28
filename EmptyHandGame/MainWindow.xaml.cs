@@ -1,4 +1,5 @@
 ﻿using DataService;
+using Domain.Models;
 using Google.Apis.PeopleService.v1.Data;
 using MaterialDesignThemes.Wpf;
 using Service;
@@ -29,27 +30,28 @@ namespace EmptyHandGame
 
         GoogleService googleService;
 
-        DataService.EmptyHandDBEntities db;
+        Context dbConnection;
 
         Person user;
+
+        string userId;
 
         public MainWindow()
         {
             InitializeComponent();
             googleService = new GoogleService();
-            Connection dbConnection = new Connection();
+            dbConnection = new Context();
 
-            db = dbConnection.GetContext();
         }
 
 
         private void BtnTest_Click(object sender, RoutedEventArgs e)
         {
 
-            Game game = new Game();
-            this.Visibility = Visibility.Collapsed;
-            game.ShowDialog();
-            game.Closing += Game_Closing;
+            //Game game = new Game();
+            //this.Visibility = Visibility.Collapsed;
+            //game.ShowDialog();
+            //game.Closing += Game_Closing;
 
             
         }
@@ -61,13 +63,42 @@ namespace EmptyHandGame
 
         private void NewGame_Click(object sender, RoutedEventArgs e)
         {
-            var userId = user.ResourceName.Split('/')[1];
-            GameService.CreateNewGame(userId, db);
+            GameService.CreateNewGame(userId, dbConnection);
         }
 
         private void Continue_Click(object sender, RoutedEventArgs e)
         {
+            var gameState = GameService.GetGameState(txtGameCode.Text, userId, dbConnection);
 
+            if(gameState == null)
+            {
+                ShowDialog("No se encontro la partida especificada.");
+                return;
+            }
+
+            if(gameState.Player2Id == null)
+            {
+                ShowDialog("Esperando que el player 2 acepte la partida.");
+                return;
+            }
+
+            Game game = new Game(gameState,user,userId);
+            this.Visibility = Visibility.Collapsed;
+            game.ShowDialog();
+            game.Closing += Game_Closing;
+        }
+
+        MaterialDialog dialogExample;
+        public void ShowDialog(string text)
+        {
+            if (dialogExample == null && !string.IsNullOrEmpty(text))
+            {
+                dialogExample = new MaterialDialog() { Message = $"{text}" };
+                dialogExample.VerticalAlignment = VerticalAlignment.Center;
+                Grid.SetRowSpan(dialogExample, 3);
+                GrdPrincipal.Children.Add(dialogExample);
+                dialogExample.btnClose.Click += (sender, args) => { dialogExample = null; };
+            }
         }
 
         private async void Login_Click(object sender, RoutedEventArgs e)
@@ -82,6 +113,7 @@ namespace EmptyHandGame
                 txtUserName.Text = user.Names.FirstOrDefault()?.DisplayName;
 
                 var photoUrl = user.Photos.FirstOrDefault()?.Url;
+                userId = user.ResourceName.Split('/')[1];
 
                 if (!string.IsNullOrEmpty(photoUrl))
                 {
@@ -124,7 +156,7 @@ namespace EmptyHandGame
 
         private async void Logout_Click(object sender, RoutedEventArgs e)
         {
-            await googleService.GoogleLogout();
+            googleService.GoogleLogout();
 
             StkLogin.Visibility = Visibility.Visible;
             StkMainMenu.Visibility = Visibility.Collapsed;

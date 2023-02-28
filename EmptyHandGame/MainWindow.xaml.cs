@@ -63,12 +63,12 @@ namespace EmptyHandGame
 
         private void NewGame_Click(object sender, RoutedEventArgs e)
         {
-            GameService.CreateNewGame(userId, dbConnection);
+            GameService.CreateNewGame(userId, user, dbConnection);
         }
 
         private void Continue_Click(object sender, RoutedEventArgs e)
         {
-            var gameState = GameService.GetGameState(txtGameCode.Text, userId, dbConnection);
+            var gameState = GameService.GetGameState(txtGameCode.Text, userId, user, dbConnection);
 
             if(gameState == null)
             {
@@ -82,8 +82,8 @@ namespace EmptyHandGame
                 return;
             }
 
-            Game game = new Game(gameState,user,userId);
-            this.Visibility = Visibility.Collapsed;
+            Game game = new Game(gameState,user,userId,dbConnection);
+           // this.Visibility = Visibility.Collapsed;
             game.ShowDialog();
             game.Closing += Game_Closing;
         }

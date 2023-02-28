@@ -30,6 +30,7 @@ namespace Domain.Models
         public static List<Card> GetCards(string cardsStr, bool faceUp = true)
         {
             var cardList = new List<Card>();
+            if (string.IsNullOrEmpty(cardsStr)) return cardList;
 
             var cards = cardsStr.Split(',');
 
@@ -248,15 +249,15 @@ namespace Domain.Models
 
         public static string ToStringList(List<Card> cardList)
         {
-            string cardsString = "";
+            List<string> cardsString = new List<string>();
             foreach (var card in cardList)
             {
                 var cardSuit = GetSuitChar(card.Suit, false);
 
-                cardsString += $"{cardSuit}_{card.Number}";
+                cardsString.Add($"{cardSuit}_{card.Number}");
             }
 
-            return cardsString;
+            return string.Join(',',cardsString);
         }
     }
 }

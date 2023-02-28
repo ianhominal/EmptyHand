@@ -41,6 +41,22 @@
                     <RowDefinition />
                 </Grid.RowDefinitions>
 
+
+                <materialDesign:Card  Margin="10" HorizontalAlignment="Left" Height="40" Width="150" VerticalAlignment="Center" Background="#FF673AB7">
+                    <TextBlock Name="txtTurnoActual"  HorizontalAlignment="Center" VerticalAlignment="Center"  FontSize="13" Foreground="#FFFFFFFF"/>
+                </materialDesign:Card>
+
+                <Grid  Margin="10" HorizontalAlignment="Right" VerticalAlignment="Center">
+
+                    <materialDesign:Card  BorderThickness="5" Margin="0,0,70,0" Padding="2" Background="#21005D" VerticalAlignment="Center"  Height="80" Width="250" HorizontalAlignment="Right">
+                        <materialDesign:Card Background="#FF673AB7">
+                            <StackPanel Orientation="Vertical"  Margin="10,10,35,10">
+                                <TextBlock Name="txtEnemyName" Foreground="#FFFFFF" HorizontalAlignment="Right" FontWeight="Bold"/>
+                            </StackPanel>
+                        </materialDesign:Card>
+                    </materialDesign:Card>
+                    <Grid Name="imgEnemy" VerticalAlignment="Center"  HorizontalAlignment="Right"/>
+                </Grid>
                 <Grid Grid.Row="0"  Name="RowEnemyHand">
                 </Grid>
 
@@ -62,17 +78,29 @@
                     <RowDefinition />
                 </Grid.RowDefinitions>
 
+                <Grid Grid.Row="1" Margin="10" HorizontalAlignment="Left" VerticalAlignment="Center">
+                    <materialDesign:Card  Margin="70,0,0,0" Padding="2" Background="#21005D" VerticalAlignment="Center"  Height="80" Width="250" HorizontalAlignment="Left">
+                        <materialDesign:Card Background="#FF673AB7">
+                            <StackPanel Orientation="Vertical"  Margin="35,10,10,10">
+                                <TextBlock Name="txtPlayerName" Foreground="#FFFFFF" HorizontalAlignment="Left" FontWeight="Bold"/>
+                            </StackPanel>
+                        </materialDesign:Card>
+                    </materialDesign:Card>
+                    <Grid Name="imgPlayer" VerticalAlignment="Center"  HorizontalAlignment="Left"/>
+                </Grid>
+
                 <Grid Grid.Row="0" Name="RowPlayerLifes">
                 </Grid>
 
                 <Grid Grid.Row="1" Name="RowPlayerHand" Width="Auto" Height="0">
                 </Grid>
 
+                <Button x:Name="btnEndTurn" Grid.Row="1" IsEnabled="False" Content="EndTurn" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="15" Click="BtnEndTurn_Click" Width="200" Height="50"/>
+
 
             </Grid>
 
-            
-            <Button x:Name="btnEndTurn" Grid.RowSpan="10" IsEnabled="False" Content="EndTurn" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="15" Click="BtnEndTurn_Click" Width="200" Height="50"/>
+
 
         </Grid>
     </ScrollViewer>

@@ -31,8 +31,12 @@ namespace DataService
 
         public GameHeader GetGameHeader(string guid)
         {
-            var gameId = Guid.Parse(guid);
-            return dbContext.GameHeaders.Where(g => g.GameId == gameId)?.FirstOrDefault();
+            Guid gameId;
+            if (Guid.TryParse(guid, out gameId))
+            {
+                return dbContext.GameHeaders.Where(g => g.GameId == gameId)?.FirstOrDefault();
+            }
+            else return null;
         }
 
         public void SaveChanges()

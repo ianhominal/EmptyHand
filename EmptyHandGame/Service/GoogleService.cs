@@ -43,7 +43,6 @@ namespace Service
             peopleRequest.RequestMaskIncludeField = new List<string>() {
             "person.names" ,
             "person.photos",
-            "person.emailAddresses",
             "person.names"  };
 
             var profile =await peopleRequest.ExecuteAsync();

@@ -1,4 +1,5 @@
-﻿using Domain.Models;
+﻿using DataService;
+using Domain.Models;
 using Google.Apis.PeopleService.v1.Data;
 using MahApps.Metro.Controls;
 using MaterialDesignThemes.Wpf;
@@ -8,6 +9,7 @@ using System;
 using System.CodeDom;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Security.Policy;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -15,6 +17,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
+using System.Windows.Shapes;
 using Card = Domain.Models.Card;
 
 namespace EmptyHandGame
@@ -28,25 +31,111 @@ namespace EmptyHandGame
         Person user;
         string userId;
         Canvas deckImg;
-
         bool turnStarted;
+        Context db;
+        
 
-        public Game(GameHeaderModel _gameState, Person _user, string _userId)
+        public Game(GameHeaderModel _gameState, Person _user, string _userId, Context _db)
         {
             InitializeComponent();
 
             userId = _userId;
             gameState = _gameState;
             user = _user;
+            db = _db;
 
+            DrawPlayersInfo();
             DrawPlayerHand();
             DrawPlayerLifeCards();
             DrawEnemyHand();
             DrawEnemyLifeCards();
             GenerateDeckAndPits();
-
+            var txtTurno = _gameState.ActualGameRound.GameRound.PlayerTurnId == userId ? "Es tu turno" : "Turno del otro jugador";
+            txtTurnoActual.Text = txtTurno;
             turnStarted = false;
         }
+
+        private void DrawPlayersInfo()
+        {
+
+            txtPlayerName.Text = gameState.ActualGameRound.ActualPlayer == GameRoundModel.ActualPlayerEnum.Player? gameState.GameHeader.PlayerName : gameState.GameHeader.Player2Name;
+            txtEnemyName.Text = gameState.ActualGameRound.ActualPlayer == GameRoundModel.ActualPlayerEnum.Player ? gameState.GameHeader.Player2Name : gameState.GameHeader.PlayerName;
+
+            var playerPhoto = gameState.ActualGameRound.ActualPlayer == GameRoundModel.ActualPlayerEnum.Player ? gameState.GameHeader.PlayerPhoto : gameState.GameHeader.Player2Photo;
+            var enemyPhoto = gameState.ActualGameRound.ActualPlayer == GameRoundModel.ActualPlayerEnum.Player ? gameState.GameHeader.Player2Photo : gameState.GameHeader.PlayerPhoto;
+
+
+            if (!string.IsNullOrEmpty(playerPhoto))
+            {
+                Ellipse playerImg = GetUserPhoto(playerPhoto);
+                Ellipse playerBg = GetBackgroundUserEllipse();
+
+
+                // Agrega el objeto "Ellipse" con la imagen y borde al objeto "Canvas".
+                imgPlayer.Children.Add(playerBg);
+                imgPlayer.Children.Add(playerImg);
+
+                imgPlayer.UpdateLayout();
+            }
+
+            if (!string.IsNullOrEmpty(enemyPhoto))
+            {
+                Ellipse enemyImg = GetUserPhoto(enemyPhoto);
+                Ellipse enemyBg = GetBackgroundUserEllipse();
+
+
+                // Agrega el objeto "Ellipse" con la imagen y borde al objeto "Canvas".
+                imgEnemy.Children.Add(enemyBg);
+                imgEnemy.Children.Add(enemyImg);
+
+                imgEnemy.UpdateLayout();
+            }
+
+
+        }
+
+        private Ellipse GetUserPhoto(string url)
+        {
+            BitmapImage bitmap = new BitmapImage();
+            bitmap.BeginInit();
+            bitmap.UriSource = new Uri(url, UriKind.Absolute);
+            bitmap.EndInit();
+
+            // Crea un nuevo objeto "ImageBrush" y asigna la imagen cargada a su propiedad "ImageSource".
+            ImageBrush imageBrush = new ImageBrush();
+            imageBrush.ImageSource = bitmap;
+
+
+
+            Ellipse ellipse = new Ellipse();
+            ellipse.Width = 100;
+            ellipse.Height = 100;
+            //Color color = (Color)ColorConverter.ConvertFromString("#FF673AB7");
+            //ellipse.Stroke = new SolidColorBrush(color);
+            ////21005D
+            //ellipse.StrokeThickness = 4;
+
+            // Asigna el objeto "ImageBrush" a la propiedad "Fill" del objeto "Ellipse".
+            ellipse.Fill = imageBrush;
+
+            return ellipse;
+
+        }
+
+        private Ellipse GetBackgroundUserEllipse()
+        {
+            Ellipse ellipsePlayerBg = new Ellipse();
+            ellipsePlayerBg.Width = 106;
+            ellipsePlayerBg.Height = 106;
+            //ellipsePlayerBg.Margin = new Thickness(0, 0, 0, 0);
+
+            Color color = (Color)ColorConverter.ConvertFromString("#21005D");
+
+            ellipsePlayerBg.Fill = new SolidColorBrush(color);
+
+            return ellipsePlayerBg;
+        }
+
 
         private void GenerateDeckAndPits()
         {
@@ -93,6 +182,8 @@ namespace EmptyHandGame
                 {
                     parent.Children.Remove(cardImage);
                 }
+
+                
                 deckGrid.Children.Add(cardImage);
 
                 cardCount++;
@@ -171,6 +262,8 @@ namespace EmptyHandGame
 
         private void DrawPlayerLifeCards()
         {
+            RowPlayerLifes.Children.RemoveRange(0, RowPlayerLifes.Children.Count);
+
             var playerLifeGrid = new Grid();
 
             playerLifeGrid.HorizontalAlignment = HorizontalAlignment.Left;
@@ -183,10 +276,22 @@ namespace EmptyHandGame
             {
                 playerLifeGrid.ColumnDefinitions.Add(new ColumnDefinition());
 
-                var cardImage = card.Image;
+                var cardImage = Card.CreateCardImage("Diamonds", "A", false, gameState.ActualGameRound?.AvailableCardsObj.Count > 0); ;
                 cardImage.Margin = new Thickness(5);
                 Grid.SetColumn(cardImage, cardCount);
 
+                cardImage.MouseEnter += (s, e) => { LifeCard_MouseEnter(card.Number, card.Image); };
+                cardImage.MouseLeave += (s, e) => { LifeCard_MouseLeave(card.Number, card.Image); };
+                cardImage.MouseLeftButtonUp += (s, e) => { LifeCard_Click(cardImage, card); };
+
+                // Obtener el elemento padre del Canvas
+                var parent = VisualTreeHelper.GetParent(cardImage) as Grid;
+
+                // Remover el Canvas del elemento padre si existe
+                if (parent != null)
+                {
+                    parent.Children.Remove(cardImage);
+                }
                 playerLifeGrid.Children.Add(cardImage);
 
                 cardCount++;
@@ -196,9 +301,11 @@ namespace EmptyHandGame
 
         }
 
+       
+
         private void BtnEndTurn_Click(object sender, RoutedEventArgs e)
         {
-            throw new NotImplementedException();
+            GameService.EndTurn(gameState,db);
         }
 
         private void DrawPlayerHand()
@@ -251,8 +358,8 @@ namespace EmptyHandGame
                 if (cardImage.Parent == null)
                 {
                     RowPlayerHand.Children.Add(cardImage);
-                    cardImage.MouseEnter += (s, e) => { CardImage_MouseEnter(card.Number,card.Image); };
-                    cardImage.MouseLeave += (s, e) => { CardImage_MouseLeave(card.Number, card.Image); }; 
+                    cardImage.MouseEnter += (s, e) => { CardImage_MouseEnter(card.Number, card.Image); };
+                    cardImage.MouseLeave += (s, e) => { CardImage_MouseLeave(card.Number, card.Image); };
                     cardImage.MouseLeftButtonUp += (s, e) => { HandCard_Click(cardImage, card); };
                 }
 
@@ -275,6 +382,10 @@ namespace EmptyHandGame
             {
                 gameState.ActualGameRound.PlayerCardsObj.Remove(card);
                 gameState.ActualGameRound.CardPitsObj[availablePit].Add(card);
+
+                cardImage.MouseEnter -= (s, e) => { CardImage_MouseEnter(card.Number, card.Image); };
+                cardImage.MouseLeave -= (s, e) => { CardImage_MouseLeave(card.Number, card.Image); };
+                cardImage.MouseLeftButtonUp -= (s, e) => { HandCard_Click(cardImage, card); };
 
                 DrawPlayerHand();
                 GenerateDeckAndPits();
@@ -321,7 +432,64 @@ namespace EmptyHandGame
             {
                 Mouse.OverrideCursor = Cursors.Hand;
 
-                card.Margin= new Thickness(0,0,0,10);
+                card.Margin = new Thickness(0, 0, 0, 10);
+            }
+
+        }
+
+
+        private void LifeCard_Click(Canvas cardImage, Card card)
+        {
+            if (turnStarted)
+            {
+                gameState.ActualGameRound.PlayerLifeCardsObj.Remove(card);
+                gameState.ActualGameRound.CardPitsObj.Add(gameState.ActualGameRound.CardPitsObj.Count,new System.Collections.Generic.List<Card>() { card });
+
+                cardImage.MouseEnter -= (s, e) => { CardImage_MouseEnter(card.Number, card.Image); };
+                cardImage.MouseLeave -= (s, e) => { CardImage_MouseLeave(card.Number, card.Image); };
+                cardImage.MouseLeftButtonUp -= (s, e) => { HandCard_Click(cardImage, card); };
+
+                DrawPlayerLifeCards();
+                GenerateDeckAndPits();
+
+                btnEndTurn.IsEnabled = true;
+            }
+            else
+            {
+                var text = "Debes juntar 2 cartas del mazo antes de jugar.";
+
+                if (dialogExample == null && !string.IsNullOrEmpty(text))
+                {
+                    dialogExample = new MaterialDialog() { Message = $"{text}" };
+                    dialogExample.VerticalAlignment = VerticalAlignment.Center;
+                    Grid.SetRowSpan(dialogExample, 3);
+                    GrdPrincipal.Children.Add(dialogExample);
+                    dialogExample.btnClose.Click += (sender, args) => { dialogExample = null; };
+                }
+            }
+        }
+        private void LifeCard_MouseLeave(int number, Canvas card)
+        {
+            bool canBePlayed = CardCanBePlayed(number) >= 0;
+            Mouse.OverrideCursor = null;
+
+            if (turnStarted && canBePlayed)
+            {
+                card.Margin = new Thickness(0, 0, 0, 0);
+            }
+        }
+
+        private void LifeCard_MouseEnter(int number, Canvas card)
+        {
+            if (turnStarted == false)
+            {
+                Mouse.OverrideCursor = Cursors.No;
+            }
+            else
+            {
+                Mouse.OverrideCursor = Cursors.Hand;
+
+                card.Margin = new Thickness(0, 0, 0, 10);
             }
 
         }
@@ -374,7 +542,7 @@ namespace EmptyHandGame
                 }
                 else
                 {
-                    if(dialogExample == null)
+                    if (dialogExample == null)
                     {
                         dialogExample = new MaterialDialog() { Message = "Ya has juntado las 2 cartas de tu turno." };
                         dialogExample.VerticalAlignment = VerticalAlignment.Center;
@@ -382,6 +550,18 @@ namespace EmptyHandGame
                         GrdPrincipal.Children.Add(dialogExample);
                         dialogExample.btnClose.Click += (sender, args) => { dialogExample = null; };
                     }
+                }
+            }
+            else
+            {
+                if (dialogExample == null)
+                {
+                    string turnoStr = gameState.ActualGameRound.ActualPlayer == GameRoundModel.ActualPlayerEnum.Player? gameState.GameHeader.Player2Name : gameState.GameHeader.PlayerName;
+                    dialogExample = new MaterialDialog() { Message = $"Es el turno de {turnoStr}." };
+                    dialogExample.VerticalAlignment = VerticalAlignment.Center;
+                    Grid.SetRowSpan(dialogExample, 3);
+                    GrdPrincipal.Children.Add(dialogExample);
+                    dialogExample.btnClose.Click += (sender, args) => { dialogExample = null; };
                 }
             }
         }

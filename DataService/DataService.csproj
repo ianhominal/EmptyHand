@@ -97,6 +97,7 @@
       <DependentUpon>EmptyHandDBModel.edmx</DependentUpon>
       <LastGenOutput>EmptyHandDBModel.Context.cs</LastGenOutput>
     </Content>
+    <Content Include="EmptyHandDBModel.edmx.sql" />
     <Content Include="EmptyHandDBModel.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <DependentUpon>EmptyHandDBModel.edmx</DependentUpon>

@@ -6,10 +6,12 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
+using System.Data.Entity;
 using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml;
 
 
 namespace Service
@@ -23,7 +25,7 @@ namespace Service
         public SignalRService(Context db, IGameUpdater gameUpdater)
         {
             _connection = new HubConnectionBuilder()
-                .WithUrl("https://localhost:44331/GameHub")
+                .WithUrl("http://181.171.133.9:44331/GameHub")
                 .Build();
 
             _gameUpdater = gameUpdater;
@@ -32,7 +34,10 @@ namespace Service
             // Define un método para manejar el evento "UpdateGameState"
             _connection.On<string>("UpdateGameState", gameGuid =>
             {
-                db.GetContext();
+                GameHeader headerToRefresh = db.GetGameHeader(gameGuid);
+
+                var entity = db.GetContext().Entry(headerToRefresh);
+                entity.Reload();
 
                 _gameUpdater.UpdateGame();
             });

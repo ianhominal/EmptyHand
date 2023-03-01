@@ -77,7 +77,6 @@ namespace Service
         {
             var deck = new List<Card>();
 
-
             //creo un string con el mazo entero
             List<string> deckStr = new List<string>();
             foreach (var cardSuit in Card.Suits)
@@ -117,8 +116,6 @@ namespace Service
             string pit = deckStr.Take(1).First();
             deckStr.Remove(pit);
 
-
-
             GameRound gameRound = new GameRound()
             {
                 GameRoundId = Guid.NewGuid(),
@@ -128,7 +125,6 @@ namespace Service
                 Player2LifeCards = player2LifeCards,
                 CardPits = pit,
                 AvailableCards = string.Join(",", deckStr.ToList()),
-
             };
 
 

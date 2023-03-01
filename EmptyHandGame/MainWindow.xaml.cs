@@ -49,16 +49,6 @@ namespace EmptyHandGame
         }
 
 
-        private void BtnTest_Click(object sender, RoutedEventArgs e)
-        {
-
-            //Game game = new Game();
-            //this.Visibility = Visibility.Collapsed;
-            //game.ShowDialog();
-            //game.Closing += Game_Closing;
-
-
-        }
 
         private void Game_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
         {
@@ -72,6 +62,7 @@ namespace EmptyHandGame
 
         private void Continue_Click(object sender, RoutedEventArgs e)
         {
+            dbConnection.UpdateContext();
             var gameState = GameService.GetGameState(txtGameCode.Text, userId, user, dbConnection);
 
             if (gameState == null)

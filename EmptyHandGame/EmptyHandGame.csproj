@@ -23,6 +23,16 @@
     <PackageReference Include="Google.Apis.PeopleService.v1" Version="1.60.0.2924" />
     <PackageReference Include="MaterialDesignColors" Version="2.1.1" />
     <PackageReference Include="MaterialDesignThemes.MahApps" Version="0.2.7" />
+    <PackageReference Include="Microsoft.AspNet.SignalR.Client" Version="2.4.3" />
+    <PackageReference Include="Microsoft.AspNetCore.Connections.Abstractions" Version="7.0.3" />
+    <PackageReference Include="Microsoft.AspNetCore.Http.Connections.Client" Version="7.0.3" />
+    <PackageReference Include="Microsoft.AspNetCore.Http.Connections.Common" Version="7.0.3" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="7.0.3" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Client.Core" Version="7.0.3" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Common" Version="7.0.3" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Protocols.Json" Version="7.0.3" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="7.0.0" />
+    <PackageReference Include="System.Net.Http" Version="4.3.4" />
   </ItemGroup>
 
   <ItemGroup>

@@ -11,10 +11,12 @@ namespace DataService
     {
 
         private EmptyHandDBEntities dbContext;
-
         public Context()
         {
             dbContext = new EmptyHandDBEntities();
+            
+            //dbContext.Configuration.ProxyCreationEnabled = false;
+            //dbContext.Configuration.LazyLoadingEnabled = false;
         }
 
         public EmptyHandDBEntities GetContext()

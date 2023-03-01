@@ -4,10 +4,13 @@ using Google.Apis.PeopleService.v1.Data;
 using MaterialDesignThemes.Wpf;
 using Service;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
+using System.Security.Policy;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -36,6 +39,7 @@ namespace EmptyHandGame
 
         string userId;
 
+
         public MainWindow()
         {
             InitializeComponent();
@@ -53,7 +57,7 @@ namespace EmptyHandGame
             //game.ShowDialog();
             //game.Closing += Game_Closing;
 
-            
+
         }
 
         private void Game_Closing(object? sender, System.ComponentModel.CancelEventArgs e)
@@ -70,20 +74,20 @@ namespace EmptyHandGame
         {
             var gameState = GameService.GetGameState(txtGameCode.Text, userId, user, dbConnection);
 
-            if(gameState == null)
+            if (gameState == null)
             {
                 ShowDialog("No se encontro la partida especificada.");
                 return;
             }
 
-            if(gameState.GameHeader.Player2Id == null)
+            if (gameState.GameHeader.Player2Id == null)
             {
                 ShowDialog("Esperando que el player 2 acepte la partida.");
                 return;
             }
 
-            Game game = new Game(gameState,user,userId,dbConnection);
-           // this.Visibility = Visibility.Collapsed;
+            Game game = new Game(gameState, user, userId, dbConnection);
+            // this.Visibility = Visibility.Collapsed;
             game.ShowDialog();
             game.Closing += Game_Closing;
         }
@@ -104,7 +108,7 @@ namespace EmptyHandGame
         private async void Login_Click(object sender, RoutedEventArgs e)
         {
             user = await googleService.GoogleLogin();
-            if(user != null)
+            if (user != null)
             {
                 StkLogin.Visibility = Visibility.Collapsed;
                 StkMainMenu.Visibility = Visibility.Visible;
@@ -129,7 +133,7 @@ namespace EmptyHandGame
                     Ellipse ellipseBg = new Ellipse();
                     ellipseBg.Width = 100;
                     ellipseBg.Height = 100;
-                    ellipseBg.Margin = new Thickness(0,5,0,0);
+                    ellipseBg.Margin = new Thickness(0, 5, 0, 0);
 
                     Color color = (Color)ColorConverter.ConvertFromString("#DDA0A0A0");
 
@@ -152,12 +156,14 @@ namespace EmptyHandGame
                     imgUser.UpdateLayout();
                 }
             }
-        }
 
+
+
+
+        }
         private async void Logout_Click(object sender, RoutedEventArgs e)
         {
             googleService.GoogleLogout();
-
             StkLogin.Visibility = Visibility.Visible;
             StkMainMenu.Visibility = Visibility.Collapsed;
             btnLogout.Visibility = Visibility.Collapsed;
@@ -165,7 +171,6 @@ namespace EmptyHandGame
             txtUserName.Text = string.Empty;
             imgUser.Children.Clear();
         }
-        
 
     }
 }

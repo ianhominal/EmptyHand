@@ -254,7 +254,7 @@ namespace Domain.Models
             {
                 var cardSuit = GetSuitChar(card.Suit, false);
 
-                cardsString.Add($"{cardSuit}_{card.Number}");
+                cardsString.Add($"{cardSuit}_{Ranks[card.Number]}");
             }
 
             return string.Join(',',cardsString);

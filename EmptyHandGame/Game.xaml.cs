@@ -1,12 +1,15 @@
 ﻿using DataService;
+using Domain.Interfaces;
 using Domain.Models;
 using Google.Apis.PeopleService.v1.Data;
 using MahApps.Metro.Controls;
 using MaterialDesignThemes.Wpf;
 using Microsoft.Win32;
+using Newtonsoft.Json;
 using Service;
 using System;
 using System.CodeDom;
+using System.Data.Common;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Security.Policy;
@@ -25,7 +28,7 @@ namespace EmptyHandGame
     /// <summary>
     /// Lógica de interacción para Game.xaml
     /// </summary>
-    public partial class Game : Window
+    public partial class Game : Window, IGameUpdater
     {
         GameHeaderModel gameState;
         Person user;
@@ -33,7 +36,8 @@ namespace EmptyHandGame
         Canvas deckImg;
         bool turnStarted;
         Context db;
-        
+
+        private SignalRService signalRClient;
 
         public Game(GameHeaderModel _gameState, Person _user, string _userId, Context _db)
         {
@@ -43,16 +47,26 @@ namespace EmptyHandGame
             gameState = _gameState;
             user = _user;
             db = _db;
+            signalRClient = new SignalRService(_db, this); ;
 
-            DrawPlayersInfo();
-            DrawPlayerHand();
-            DrawPlayerLifeCards();
-            DrawEnemyHand();
-            DrawEnemyLifeCards();
-            GenerateDeckAndPits();
-            var txtTurno = _gameState.ActualGameRound.GameRound.PlayerTurnId == userId ? "Es tu turno" : "Turno del otro jugador";
-            txtTurnoActual.Text = txtTurno;
-            turnStarted = false;
+            UpdateGame();
+
+        }
+
+        public void UpdateGame()
+        {
+            Dispatcher.Invoke(() => {
+                btnEndTurn.IsEnabled = false;
+                DrawPlayersInfo();
+                DrawPlayerHand();
+                DrawPlayerLifeCards();
+                DrawEnemyHand();
+                DrawEnemyLifeCards();
+                GenerateDeckAndPits();
+                var txtTurno = gameState.ActualGameRound.GameRound.PlayerTurnId == userId ? "Es tu turno" : "Turno del otro jugador";
+                txtTurnoActual.Text = txtTurno;
+                turnStarted = false;
+            });
         }
 
         private void DrawPlayersInfo()
@@ -196,6 +210,7 @@ namespace EmptyHandGame
 
         private void DrawEnemyHand()
         {
+            RowEnemyHand.Children.RemoveRange(0, RowEnemyHand.Children.Count);
             var handGrid = new Grid();
 
             handGrid.HorizontalAlignment = HorizontalAlignment.Center;
@@ -219,6 +234,15 @@ namespace EmptyHandGame
                 cardImage.Margin = new Thickness(5);
                 Grid.SetColumn(cardImage, cardCount);
 
+                // Obtener el elemento padre del Canvas
+                var parent = VisualTreeHelper.GetParent(cardImage) as Grid;
+
+                // Remover el Canvas del elemento padre si existe
+                if (parent != null)
+                {
+                    parent.Children.Remove(cardImage);
+                }
+
                 handGrid.Children.Add(cardImage);
 
                 cardCount++;
@@ -229,6 +253,7 @@ namespace EmptyHandGame
 
         private void DrawEnemyLifeCards()
         {
+            RowEnemyLifes.Children.RemoveRange(0, RowEnemyLifes.Children.Count);
             var playerLifeGrid = new Grid();
 
             playerLifeGrid.HorizontalAlignment = HorizontalAlignment.Right;
@@ -252,6 +277,14 @@ namespace EmptyHandGame
                 cardImage.Margin = new Thickness(5);
                 Grid.SetColumn(cardImage, cardCount);
 
+                // Obtener el elemento padre del Canvas
+                var parent = VisualTreeHelper.GetParent(cardImage) as Grid;
+
+                // Remover el Canvas del elemento padre si existe
+                if (parent != null)
+                {
+                    parent.Children.Remove(cardImage);
+                }
                 playerLifeGrid.Children.Add(cardImage);
 
                 cardCount++;
@@ -303,14 +336,18 @@ namespace EmptyHandGame
 
        
 
-        private void BtnEndTurn_Click(object sender, RoutedEventArgs e)
+        private async void BtnEndTurn_Click(object sender, RoutedEventArgs e)
         {
             GameService.EndTurn(gameState,db);
+            await signalRClient.EndTurn(gameState.GameHeader.GameId.ToString());
+            UpdateGame();
         }
 
         private void DrawPlayerHand()
         {
             //if(playerHandGrid == null) playerHandGrid = new Grid();
+
+            RowPlayerHand.Children.RemoveRange(0, RowPlayerHand.Children.Count);
 
             RowPlayerHand.HorizontalAlignment = HorizontalAlignment.Center;
             RowPlayerHand.VerticalAlignment = VerticalAlignment.Bottom;
@@ -354,6 +391,15 @@ namespace EmptyHandGame
                 cardImage.Margin = new Thickness(5);
                 Grid.SetColumn(cardImage, cardCount);
                 Grid.SetRow(cardImage, rowCount);
+
+                // Obtener el elemento padre del Canvas
+                var parent = VisualTreeHelper.GetParent(cardImage) as Grid;
+
+                // Remover el Canvas del elemento padre si existe
+                if (parent != null)
+                {
+                    parent.Children.Remove(cardImage);
+                }
 
                 if (cardImage.Parent == null)
                 {
@@ -566,9 +612,14 @@ namespace EmptyHandGame
             }
         }
 
-        private void Game_Loaded(object sender, RoutedEventArgs e)
+
+        private async void Window_Loaded(object sender, RoutedEventArgs e)
         {
+
+            await signalRClient.Conectar();
+
         }
+
 
         //private void DrawDeck()
         //{

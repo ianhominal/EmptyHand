@@ -18,7 +18,6 @@ namespace Domain.Models
             {
                 ActualGameRound = new GameRoundModel(header.GameRound, header.PlayerId == userId ? ActualPlayerEnum.Player : ActualPlayerEnum.Player2);
             }
-            
         }
 
         public GameHeader GameHeader { get; set; }

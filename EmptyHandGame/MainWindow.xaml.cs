@@ -62,7 +62,7 @@ namespace EmptyHandGame
 
         private void Continue_Click(object sender, RoutedEventArgs e)
         {
-            dbConnection.UpdateContext();
+            //dbConnection.UpdateContext();
             var gameState = GameService.GetGameState(txtGameCode.Text, userId, user, dbConnection);
 
             if (gameState == null)

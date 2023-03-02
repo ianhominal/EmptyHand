@@ -30,11 +30,11 @@ namespace DataService
             dbContext.GameHeaders.Add(gH);
             SaveChanges();
         }
-        public EmptyHandDBEntities UpdateContext()
-        {
-            dbContext = new EmptyHandDBEntities();
-            return dbContext;
-        }
+        //public EmptyHandDBEntities UpdateContext()
+        //{
+        //    dbContext = new EmptyHandDBEntities();
+        //    return dbContext;
+        //}
 
 
         public GameHeader GetGameHeader(string guid)

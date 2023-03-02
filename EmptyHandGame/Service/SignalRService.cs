@@ -25,7 +25,7 @@ namespace Service
         public SignalRService(Context db, IGameUpdater gameUpdater)
         {
             _connection = new HubConnectionBuilder()
-                .WithUrl("http://181.171.133.9:44331/GameHub")
+                .WithUrl("https://localhost:44331/GameHub")
                 .Build();
 
             _gameUpdater = gameUpdater;
@@ -35,10 +35,11 @@ namespace Service
             _connection.On<string>("UpdateGameState", gameGuid =>
             {
                 GameHeader headerToRefresh = db.GetGameHeader(gameGuid);
-
+                GameRound gameRoundToRefresh = headerToRefresh.GameRound;
                 var entity = db.GetContext().Entry(headerToRefresh);
+                var entityRound = db.GetContext().Entry(gameRoundToRefresh);
                 entity.Reload();
-
+                entityRound.Reload();
                 _gameUpdater.UpdateGame();
             });
 
@@ -46,7 +47,10 @@ namespace Service
 
         public async Task Conectar()
         {
-            await _connection.StartAsync();
+            if(_connection.State == HubConnectionState.Disconnected)
+            {
+                await _connection.StartAsync();
+            }
         }
 
         public async Task EndTurn(string gameGuid)

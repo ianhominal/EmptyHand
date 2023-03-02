@@ -15,7 +15,7 @@ namespace Domain.Models
     {
         public string Suit; //palo
         public int Number;
-
+        public bool CanBePlayed;
         public Canvas Image;
 
         public static List<string> Suits = new List<string>() { "D", "P", "T", "C" };

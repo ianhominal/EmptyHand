@@ -18,8 +18,10 @@ namespace DataService
         public EmptyHandDBEntities()
             : base("name=EmptyHandDBEntities")
         {
+            this.Configuration.AutoDetectChangesEnabled = true;
+
         }
-    
+
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
             throw new UnintentionalCodeFirstException();

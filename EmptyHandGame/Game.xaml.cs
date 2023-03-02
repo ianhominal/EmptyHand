@@ -10,6 +10,7 @@ using Service;
 using System;
 using System.CodeDom;
 using System.Data.Common;
+using System.Data.Entity;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Security.Policy;
@@ -49,15 +50,17 @@ namespace EmptyHandGame
             db = _db;
             signalRClient = new SignalRService(_db, this); ;
 
+            DrawPlayersInfo();
             UpdateGame();
 
         }
 
         public void UpdateGame()
         {
+
             Dispatcher.Invoke(() => {
+                gameState = GameService.ToModel(gameState.GameHeader, userId, user, db);
                 btnEndTurn.IsEnabled = false;
-                DrawPlayersInfo();
                 DrawPlayerHand();
                 DrawPlayerLifeCards();
                 DrawEnemyHand();
@@ -68,6 +71,7 @@ namespace EmptyHandGame
                 turnStarted = false;
             });
         }
+
 
         private void DrawPlayersInfo()
         {
@@ -153,7 +157,7 @@ namespace EmptyHandGame
 
         private void GenerateDeckAndPits()
         {
-            RowDeck.Children.RemoveRange(0, RowDeck.Children.Count);
+            RowDeck.Children.Clear();
 
             var deckGrid = new Grid();
 
@@ -179,6 +183,7 @@ namespace EmptyHandGame
                 deckGrid.ColumnDefinitions.Add(new ColumnDefinition());
 
                 var lastPitCard = pit.Value.Last();
+                lastPitCard.CanBePlayed = false;
 
                 var cardImage = lastPitCard.Image;
                 cardImage.Margin = new Thickness(5);
@@ -227,6 +232,7 @@ namespace EmptyHandGame
             var cardCount = 0;
             foreach (var card in handCards)
             {
+                card.CanBePlayed = false;
                 handGrid.ColumnDefinitions.Add(new ColumnDefinition());
 
 
@@ -272,6 +278,7 @@ namespace EmptyHandGame
             {
                 playerLifeGrid.ColumnDefinitions.Add(new ColumnDefinition());
 
+                card.CanBePlayed = false;
 
                 var cardImage = card.Image;
                 cardImage.Margin = new Thickness(5);
@@ -309,6 +316,8 @@ namespace EmptyHandGame
             {
                 playerLifeGrid.ColumnDefinitions.Add(new ColumnDefinition());
 
+                card.CanBePlayed = true;
+
                 var cardImage = Card.CreateCardImage("Diamonds", "A", false, gameState.ActualGameRound?.AvailableCardsObj.Count > 0); ;
                 cardImage.Margin = new Thickness(5);
                 Grid.SetColumn(cardImage, cardCount);
@@ -334,13 +343,14 @@ namespace EmptyHandGame
 
         }
 
-       
+
 
         private async void BtnEndTurn_Click(object sender, RoutedEventArgs e)
         {
-            GameService.EndTurn(gameState,db);
+            GameService.EndTurn(gameState, db);
             await signalRClient.EndTurn(gameState.GameHeader.GameId.ToString());
             UpdateGame();
+            
         }
 
         private void DrawPlayerHand()
@@ -387,6 +397,8 @@ namespace EmptyHandGame
             var rowCount = 0;
             foreach (var card in handCards)
             {
+                card.CanBePlayed = true; 
+                
                 var cardImage = card.Image;
                 cardImage.Margin = new Thickness(5);
                 Grid.SetColumn(cardImage, cardCount);
@@ -424,8 +436,9 @@ namespace EmptyHandGame
         private void HandCard_Click(Canvas cardImage, Card card)
         {
             var availablePit = CardCanBePlayed(card.Number);
-            if (availablePit >= 0 && turnStarted)
+            if (availablePit >= 0 && turnStarted && card.CanBePlayed)
             {
+                card.CanBePlayed = false;
                 gameState.ActualGameRound.PlayerCardsObj.Remove(card);
                 gameState.ActualGameRound.CardPitsObj[availablePit].Add(card);
 
@@ -486,8 +499,9 @@ namespace EmptyHandGame
 
         private void LifeCard_Click(Canvas cardImage, Card card)
         {
-            if (turnStarted)
+            if (turnStarted && card.CanBePlayed)
             {
+                card.CanBePlayed = false;
                 gameState.ActualGameRound.PlayerLifeCardsObj.Remove(card);
                 gameState.ActualGameRound.CardPitsObj.Add(gameState.ActualGameRound.CardPitsObj.Count,new System.Collections.Generic.List<Card>() { card });
 

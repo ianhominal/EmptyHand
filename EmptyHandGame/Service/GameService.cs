@@ -19,8 +19,15 @@ namespace Service
 
             if (gameHeader == null) return null;
 
-            var gameState = new GameHeaderModel(gameHeader, userId);
+            var gameState = ToModel(gameHeader, userId, user, db);
 
+            return gameState;
+        }
+
+        public static GameHeaderModel ToModel(GameHeader gameHeader, string userId, Person user, Context db)
+        {
+
+            var gameState = new GameHeaderModel(gameHeader, userId);
             //si la partida tiene player 1 y 2
             if (gameState.GameHeader.Player2Id != null)
             {
@@ -67,8 +74,6 @@ namespace Service
                     return gameState;
                 }
             }
-
-
             return gameState;
         }
 
@@ -146,8 +151,8 @@ namespace Service
                     break;
                 case ActualPlayerEnum.Player2:
 
-                    gameState.GameHeader.GameRound.PlayerCards = Card.ToStringList(gameState.ActualGameRound.Player2CardsObj);
-                    gameState.GameHeader.GameRound.PlayerLifeCards = Card.ToStringList(gameState.ActualGameRound.Player2LifeCardsObj);
+                    gameState.GameHeader.GameRound.Player2Cards = Card.ToStringList(gameState.ActualGameRound.PlayerCardsObj);
+                    gameState.GameHeader.GameRound.Player2LifeCards = Card.ToStringList(gameState.ActualGameRound.PlayerLifeCardsObj);
                     gameState.GameHeader.GameRound.PlayerTurnId = gameState.GameHeader.PlayerId;
                     break;
             }
@@ -173,6 +178,8 @@ namespace Service
 
             return gH;
         }
+
+
 
     }
 }

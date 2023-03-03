@@ -1,44 +1,34 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Documents;
 using DataService;
 
 namespace Domain.Models
 {
-    public partial class GameRoundModel
+    public partial class GameRoundModel : INotifyPropertyChanged
     {
-        public enum ActualPlayerEnum
+        public event PropertyChangedEventHandler? PropertyChanged;
+
+        protected virtual void OnPropertyChanged(string propertyName)
         {
-            Player,
-            Player2
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
-        public GameRoundModel(GameRound gameRound, ActualPlayerEnum actualPlayer)
+        public GameRoundModel(GameRound gameRound, string player1Id, string player2Id, int player1RoundsWin, int player2RoundsWin, int player1Points, int player2Points, string player1Name, string player2Name, string player1PhotoURL, string player2PhotoURL, string? actualPlayerId)
         {
-            GameRound = gameRound;
+            GameRoundId = gameRound.GameRoundId;
 
-            //determino si esta jugando el player 1 o el 2
-            ActualPlayer = actualPlayer;
-            //creo los objetos tipo Card
-            switch (actualPlayer)
-            {
-                case ActualPlayerEnum.Player:
-                    PlayerCardsObj = Card.GetCards(gameRound.PlayerCards);
-                    Player2CardsObj = Card.GetCards(gameRound.Player2Cards, false);
-                    PlayerLifeCardsObj = Card.GetCards(gameRound.PlayerLifeCards, true);
-                    Player2LifeCardsObj = Card.GetCards(gameRound.Player2LifeCards, false);
-                    break;
-                case ActualPlayerEnum.Player2:
-                    PlayerCardsObj = Card.GetCards(gameRound.Player2Cards);
-                    Player2CardsObj = Card.GetCards(gameRound.PlayerCards, false);
-                    PlayerLifeCardsObj = Card.GetCards(gameRound.Player2LifeCards, true);
-                    Player2LifeCardsObj = Card.GetCards(gameRound.PlayerLifeCards, false);
-                    break;
-            }
+            TurnStarted = false;
+
+            Player1Cards = new PlayerCardsModel(gameRound.PlayerCards, gameRound.PlayerLifeCards, player1Id, player1Points, player1RoundsWin, player1Name, player1PhotoURL, actualPlayerId == player1Id);
+            Player2Cards = new PlayerCardsModel(gameRound.Player2Cards, gameRound.Player2LifeCards, player2Id, player2Points, player2RoundsWin, player2Name, player2PhotoURL, actualPlayerId == player2Id);
 
             AvailableCardsObj = Card.GetCards(gameRound.AvailableCards);
+
             var pitsSplit = gameRound.CardPits.Split('|');
             var pitCount = 0;
 
@@ -50,14 +40,26 @@ namespace Domain.Models
             }
         }
 
-        public GameRound GameRound { get; set; }
+        public Guid GameRoundId { get; set; }
+        public PlayerCardsModel Player1Cards { get; set; }
+        public PlayerCardsModel Player2Cards { get; set; }
+    
 
-        public ActualPlayerEnum ActualPlayer;
         public List<Card> AvailableCardsObj { get; set; }
-        public List<Card> PlayerCardsObj { get; set; }
-        public List<Card> PlayerLifeCardsObj { get; set; }
-        public List<Card> Player2CardsObj { get; set; }
-        public List<Card> Player2LifeCardsObj { get; set; }
         public Dictionary<int, List<Card>> CardPitsObj { get; set; }
+
+        private bool _turnStarted;
+        public bool TurnStarted
+        {
+            get { return _turnStarted; }
+            set
+            {
+                if (_turnStarted != value)
+                {
+                    _turnStarted = value;
+                    OnPropertyChanged(nameof(TurnStarted));
+                }
+            }
+        }
     }
 }

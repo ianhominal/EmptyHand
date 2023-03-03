@@ -33,7 +33,6 @@ namespace EmptyHandGame
 
         GoogleService googleService;
 
-        Context dbConnection;
 
         Person user;
 
@@ -44,7 +43,6 @@ namespace EmptyHandGame
         {
             InitializeComponent();
             googleService = new GoogleService();
-            dbConnection = new Context();
 
         }
 
@@ -57,13 +55,13 @@ namespace EmptyHandGame
 
         private void NewGame_Click(object sender, RoutedEventArgs e)
         {
-            GameService.CreateNewGame(userId, user, dbConnection);
+            GameService.CreateNewGame(userId, user);
         }
 
         private void Continue_Click(object sender, RoutedEventArgs e)
         {
             //dbConnection.UpdateContext();
-            var gameState = GameService.GetGameState(txtGameCode.Text, userId, user, dbConnection);
+            var gameState = GameService.GetGameState(txtGameCode.Text, userId, user);
 
             if (gameState == null)
             {
@@ -71,13 +69,13 @@ namespace EmptyHandGame
                 return;
             }
 
-            if (gameState.GameHeader.Player2Id == null)
+            if (gameState.ActualGameRound?.Player2Cards?.PlayerId == null)
             {
                 ShowDialog("Esperando que el player 2 acepte la partida.");
                 return;
             }
 
-            Game game = new Game(gameState, user, userId, dbConnection);
+            Game game = new Game(gameState, user, userId);
             // this.Visibility = Visibility.Collapsed;
             game.ShowDialog();
             game.Closing += Game_Closing;

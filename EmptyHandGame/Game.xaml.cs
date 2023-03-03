@@ -36,19 +36,23 @@ namespace EmptyHandGame
         string userId;
         Canvas deckImg;
         bool turnStarted;
-        Context db;
+
+        PlayerCardsModel actualPlayerInfo;
+        PlayerCardsModel enemyPlayerInfo;
+
+        string playerTurnId;
 
         private SignalRService signalRClient;
 
-        public Game(GameHeaderModel _gameState, Person _user, string _userId, Context _db)
+        public Game(GameHeaderModel _gameState, Person _user, string _userId)
         {
             InitializeComponent();
 
             userId = _userId;
             gameState = _gameState;
             user = _user;
-            db = _db;
-            signalRClient = new SignalRService(_db, this); ;
+            signalRClient = new SignalRService(this);
+
 
             DrawPlayersInfo();
             UpdateGame();
@@ -57,16 +61,19 @@ namespace EmptyHandGame
 
         public void UpdateGame()
         {
-
             Dispatcher.Invoke(() => {
-                gameState = GameService.ToModel(gameState.GameHeader, userId, user, db);
+                gameState = GameService.ToModel(Context.GetGameHeader(gameState.GameId.ToString()), userId, user);
                 btnEndTurn.IsEnabled = false;
+
                 DrawPlayerHand();
                 DrawPlayerLifeCards();
                 DrawEnemyHand();
                 DrawEnemyLifeCards();
                 GenerateDeckAndPits();
-                var txtTurno = gameState.ActualGameRound.GameRound.PlayerTurnId == userId ? "Es tu turno" : "Turno del otro jugador";
+
+                playerTurnId = gameState.ActualGameRound.Player1Cards.PlayerTurn ? gameState.ActualGameRound.Player2Cards.PlayerId : gameState.ActualGameRound.Player1Cards.PlayerId;
+
+                var txtTurno = playerTurnId == userId ? "Es tu turno" : "Turno del otro jugador";
                 txtTurnoActual.Text = txtTurno;
                 turnStarted = false;
             });
@@ -75,12 +82,14 @@ namespace EmptyHandGame
 
         private void DrawPlayersInfo()
         {
+            actualPlayerInfo = gameState.ActualGameRound.Player1Cards.PlayerId == userId ? gameState.ActualGameRound.Player1Cards : gameState.ActualGameRound.Player2Cards;
+            enemyPlayerInfo = gameState.ActualGameRound.Player1Cards.PlayerId == userId ? gameState.ActualGameRound.Player2Cards : gameState.ActualGameRound.Player1Cards;
 
-            txtPlayerName.Text = gameState.ActualGameRound.ActualPlayer == GameRoundModel.ActualPlayerEnum.Player? gameState.GameHeader.PlayerName : gameState.GameHeader.Player2Name;
-            txtEnemyName.Text = gameState.ActualGameRound.ActualPlayer == GameRoundModel.ActualPlayerEnum.Player ? gameState.GameHeader.Player2Name : gameState.GameHeader.PlayerName;
+            txtPlayerName.Text = actualPlayerInfo.PlayerName;
+            txtEnemyName.Text = enemyPlayerInfo.PlayerName;
 
-            var playerPhoto = gameState.ActualGameRound.ActualPlayer == GameRoundModel.ActualPlayerEnum.Player ? gameState.GameHeader.PlayerPhoto : gameState.GameHeader.Player2Photo;
-            var enemyPhoto = gameState.ActualGameRound.ActualPlayer == GameRoundModel.ActualPlayerEnum.Player ? gameState.GameHeader.Player2Photo : gameState.GameHeader.PlayerPhoto;
+            var playerPhoto = actualPlayerInfo.PlayerPhoto;
+            var enemyPhoto = enemyPlayerInfo.PlayerPhoto;
 
 
             if (!string.IsNullOrEmpty(playerPhoto))
@@ -221,12 +230,8 @@ namespace EmptyHandGame
             handGrid.HorizontalAlignment = HorizontalAlignment.Center;
             handGrid.VerticalAlignment = VerticalAlignment.Bottom;
 
-            var handCards = gameState.ActualGameRound.Player2CardsObj;
+            var handCards = enemyPlayerInfo.PlayerCardsObj;
 
-            //for (int i = 0; i <= 3; i++)
-            //{
-            //    handGrid.RowDefinitions.Add(new RowDefinition());
-            //}
 
             //defino las columnas
             var cardCount = 0;
@@ -235,8 +240,7 @@ namespace EmptyHandGame
                 card.CanBePlayed = false;
                 handGrid.ColumnDefinitions.Add(new ColumnDefinition());
 
-
-                var cardImage = card.Image;
+                var cardImage = Card.CreateCardImage("Diamonds", "A", false, gameState.ActualGameRound?.AvailableCardsObj.Count > 0);
                 cardImage.Margin = new Thickness(5);
                 Grid.SetColumn(cardImage, cardCount);
 
@@ -265,7 +269,7 @@ namespace EmptyHandGame
             playerLifeGrid.HorizontalAlignment = HorizontalAlignment.Right;
             playerLifeGrid.VerticalAlignment = VerticalAlignment.Bottom;
 
-            var lifeCards = gameState.ActualGameRound.Player2LifeCardsObj;
+            var lifeCards = enemyPlayerInfo.PlayerLifeCardsObj;
 
             //for (int i = 0; i <= 3; i++)
             //{
@@ -280,7 +284,8 @@ namespace EmptyHandGame
 
                 card.CanBePlayed = false;
 
-                var cardImage = card.Image;
+                var cardImage = Card.CreateCardImage("Diamonds", "A", false, gameState.ActualGameRound?.AvailableCardsObj.Count > 0);
+
                 cardImage.Margin = new Thickness(5);
                 Grid.SetColumn(cardImage, cardCount);
 
@@ -309,7 +314,7 @@ namespace EmptyHandGame
             playerLifeGrid.HorizontalAlignment = HorizontalAlignment.Left;
             playerLifeGrid.VerticalAlignment = VerticalAlignment.Bottom;
 
-            var lifeCards = gameState.ActualGameRound.PlayerLifeCardsObj;
+            var lifeCards = actualPlayerInfo.PlayerLifeCardsObj;
 
             var cardCount = 0;
             foreach (var card in lifeCards)
@@ -347,8 +352,8 @@ namespace EmptyHandGame
 
         private async void BtnEndTurn_Click(object sender, RoutedEventArgs e)
         {
-            GameService.EndTurn(gameState, db);
-            await signalRClient.EndTurn(gameState.GameHeader.GameId.ToString());
+            GameService.EndTurn(gameState);
+            await signalRClient.EndTurn(gameState.GameId.ToString());
             UpdateGame();
             
         }
@@ -364,7 +369,7 @@ namespace EmptyHandGame
 
             var maxColums = 20;
 
-            var handCards = gameState.ActualGameRound.PlayerCardsObj;
+            var handCards = actualPlayerInfo.PlayerCardsObj;
 
             RowPlayerHand.Height = ((int)(handCards.Count / maxColums) + 1) * 150;
             //this.Height = RowEnemy.Height + RowDeck.Height + RowPlayerHand.Height;
@@ -439,7 +444,7 @@ namespace EmptyHandGame
             if (availablePit >= 0 && turnStarted && card.CanBePlayed)
             {
                 card.CanBePlayed = false;
-                gameState.ActualGameRound.PlayerCardsObj.Remove(card);
+                actualPlayerInfo.PlayerCardsObj.Remove(card);
                 gameState.ActualGameRound.CardPitsObj[availablePit].Add(card);
 
                 cardImage.MouseEnter -= (s, e) => { CardImage_MouseEnter(card.Number, card.Image); };
@@ -502,7 +507,7 @@ namespace EmptyHandGame
             if (turnStarted && card.CanBePlayed)
             {
                 card.CanBePlayed = false;
-                gameState.ActualGameRound.PlayerLifeCardsObj.Remove(card);
+                actualPlayerInfo.PlayerLifeCardsObj.Remove(card);
                 gameState.ActualGameRound.CardPitsObj.Add(gameState.ActualGameRound.CardPitsObj.Count,new System.Collections.Generic.List<Card>() { card });
 
                 cardImage.MouseEnter -= (s, e) => { CardImage_MouseEnter(card.Number, card.Image); };
@@ -575,7 +580,7 @@ namespace EmptyHandGame
         MaterialDialog dialogExample;
         private void GetCardsFromDeck()
         {
-            if (gameState.ActualGameRound.GameRound.PlayerTurnId == userId)
+            if (playerTurnId == userId)
             {
                 if (turnStarted == false)
                 {
@@ -589,7 +594,7 @@ namespace EmptyHandGame
                     {
                         var cards = gameState.ActualGameRound.AvailableCardsObj.Take(2).ToList();
 
-                        gameState.ActualGameRound.PlayerCardsObj.AddRange(cards);
+                        actualPlayerInfo.PlayerCardsObj.AddRange(cards);
 
                         foreach (var card in cards)
                         {
@@ -616,7 +621,15 @@ namespace EmptyHandGame
             {
                 if (dialogExample == null)
                 {
-                    string turnoStr = gameState.ActualGameRound.ActualPlayer == GameRoundModel.ActualPlayerEnum.Player? gameState.GameHeader.Player2Name : gameState.GameHeader.PlayerName;
+                    string turnoStr;
+                    if (playerTurnId == actualPlayerInfo.PlayerId) 
+                    {
+                        turnoStr = actualPlayerInfo.PlayerName;
+                    }
+                    else
+                    {
+                        turnoStr = enemyPlayerInfo.PlayerName;
+                    }
                     dialogExample = new MaterialDialog() { Message = $"Es el turno de {turnoStr}." };
                     dialogExample.VerticalAlignment = VerticalAlignment.Center;
                     Grid.SetRowSpan(dialogExample, 3);

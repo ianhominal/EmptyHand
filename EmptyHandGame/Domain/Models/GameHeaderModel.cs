@@ -12,15 +12,22 @@ namespace Domain.Models
     {
         public GameHeaderModel(GameHeader header, string userId)
         {
-            GameHeader = header;
+            GameId = header.GameId;
+            RoundsCount = header.RoundsCount;
+            GameRoundId = header.GameRoundId;
 
-            if(header.GameRound != null)
+            if (header.GameRound != null)
             {
-                ActualGameRound = new GameRoundModel(header.GameRound, header.PlayerId == userId ? ActualPlayerEnum.Player : ActualPlayerEnum.Player2);
+                ActualGameRound = new GameRoundModel(header.GameRound,header.PlayerId,header.Player2Id, header.PlayerRoundsWins, header.Player2RoundsWins, header.PlayerPoints, header.Player2Points,header.PlayerName, header.Player2Name, header.PlayerPhoto, header.Player2Photo, userId);
             }
         }
 
-        public GameHeader GameHeader { get; set; }
+        public GameHeaderModel() { }
+
+        public Guid GameId { get; set; }
+        public int RoundsCount { get; set; }
+        public Guid? GameRoundId { get; set; }
+
         public GameRoundModel? ActualGameRound { get; set; }
 
     }

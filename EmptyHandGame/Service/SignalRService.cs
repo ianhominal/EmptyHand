@@ -9,6 +9,7 @@ using System.Data.Common;
 using System.Data.Entity;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
@@ -22,11 +23,21 @@ namespace Service
         private readonly HubConnection _connection;
         private readonly IGameUpdater _gameUpdater;
 
-        public SignalRService(Context db, IGameUpdater gameUpdater)
+        public SignalRService(IGameUpdater gameUpdater)
         {
+            var handler = new HttpClientHandler();
+            handler.ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true;
+            var httpClient = new HttpClient(handler);
+
             _connection = new HubConnectionBuilder()
-                .WithUrl("https://localhost:44331/GameHub")
-                .Build();
+                .WithUrl("https://181.171.133.9:44331/GameHub", options =>
+                {
+                    options.HttpMessageHandlerFactory = _ => handler;
+                }).Build();
+
+            //_connection = new HubConnectionBuilder()
+            //    .WithUrl("https://181.171.133.9:44331/GameHub")
+            //    .Build();
 
             _gameUpdater = gameUpdater;
 
@@ -34,12 +45,8 @@ namespace Service
             // Define un método para manejar el evento "UpdateGameState"
             _connection.On<string>("UpdateGameState", gameGuid =>
             {
-                GameHeader headerToRefresh = db.GetGameHeader(gameGuid);
-                GameRound gameRoundToRefresh = headerToRefresh.GameRound;
-                var entity = db.GetContext().Entry(headerToRefresh);
-                var entityRound = db.GetContext().Entry(gameRoundToRefresh);
-                entity.Reload();
-                entityRound.Reload();
+                Context.RefreshGameData(gameGuid);
+
                 _gameUpdater.UpdateGame();
             });
 
@@ -47,7 +54,8 @@ namespace Service
 
         public async Task Conectar()
         {
-            if(_connection.State == HubConnectionState.Disconnected)
+
+            if (_connection.State == HubConnectionState.Disconnected)
             {
                 await _connection.StartAsync();
             }

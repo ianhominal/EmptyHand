@@ -27,7 +27,7 @@ namespace Domain.Models
         public static double CardWidth = 100;
         public static double CardHeight = 140;
 
-        public static List<Card> GetCards(string cardsStr, bool faceUp = true)
+        public static List<Card> GetCards(string cardsStr)
         {
             var cardList = new List<Card>();
             if (string.IsNullOrEmpty(cardsStr)) return cardList;
@@ -59,7 +59,7 @@ namespace Domain.Models
                 {
                     Suit = suit,
                     Number = Ranks.IndexOf(cardProps[1].ToString()),
-                    Image = CreateCardImage(suit, cardProps[1].ToString(), faceUp)
+                    Image = CreateCardImage(suit, cardProps[1].ToString())
                 });
 
             }

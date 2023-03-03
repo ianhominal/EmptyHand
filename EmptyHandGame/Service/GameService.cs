@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection.PortableExecutable;
 using System.Security.Policy;
 using static Domain.Models.GameRoundModel;
 
@@ -13,68 +14,60 @@ namespace Service
 {
     public class GameService
     {
-        public static GameHeaderModel? GetGameState(string gameGuid, string userId, Person user, Context db)
+        public static GameHeaderModel? GetGameState(string gameGuid, string userId, Person user)
         {
-            var gameHeader = db.GetGameHeader(gameGuid);
+            var gameHeader = Context.GetGameHeader(gameGuid);
 
             if (gameHeader == null) return null;
 
-            var gameState = ToModel(gameHeader, userId, user, db);
+            var gameState = ToModel(gameHeader, userId, user);
 
             return gameState;
         }
 
-        public static GameHeaderModel ToModel(GameHeader gameHeader, string userId, Person user, Context db)
+        public static GameHeaderModel? ToModel(GameHeader gameHeader, string userId, Person user)
         {
+            bool updateEntity = false;
+            //si la partida tiene player 1 y 2 y el jugador actual esta en ella
+            if (gameHeader.Player2Id != null && gameHeader.Player2Id != userId && gameHeader.PlayerId != userId) return null;
 
-            var gameState = new GameHeaderModel(gameHeader, userId);
-            //si la partida tiene player 1 y 2
-            if (gameState.GameHeader.Player2Id != null)
-            {
-                //partida pertenece a otros players
-                if (gameState.GameHeader.Player2Id != userId && gameState.GameHeader.PlayerId != userId) return null;
-            }
-            else if (gameState.GameHeader.PlayerId != userId)
+            //si la partida tiene 1 solo jugador y es quien intenta acceder no puede.
+            if (gameHeader.GameRound == null && gameHeader.PlayerId == userId) return null;
+
+            else if (gameHeader.PlayerId != userId)
             {
                 //si esta disponible el player 2  y no es el mismo que el player 1 entonces lo asigna
-                gameState.GameHeader.Player2Id = userId;
+                gameHeader.Player2Id = userId;
+                gameHeader.Player2Name = user.Names?.FirstOrDefault()?.DisplayName;
+                gameHeader.Player2Photo = user.Photos?.FirstOrDefault()?.Url;
 
-                gameState.GameHeader.Player2Name = user.Names.FirstOrDefault()?.DisplayName;
-                gameState.GameHeader.Player2Photo = user.Photos.FirstOrDefault()?.Url;
-                //guardar este cambio
-                db.SaveChanges();
+                //guardar este cambio que agrega la info del player 2 a la entity ya creada
+                updateEntity = true;
             }
 
             //si esta creado el juego pero aun no tiene un GameRound
-            if (gameState.GameHeader.GameRound == null)
+            if (gameHeader.GameRound == null)
             {
-                //si no tiene pero tiene player2ID entonces debería empezar un nuevo game
-                if (gameState.GameHeader.Player2Id != null)
-                {
-                    //obtengo las cartas para la ronda
-                    var newRound = GetNewGameCards();
+                //obtengo las cartas para la ronda
+                gameHeader.GameRound = GetNewGameCards();
 
-                    //agrego al entity header los datos de la ronda creada
-                    gameState.GameHeader.GameRoundId = newRound.GameRoundId;
-                    gameState.GameHeader.GameRound = newRound;
+                //agrego al entity header los datos de la ronda creada
+                gameHeader.GameRoundId = gameHeader.GameRound.GameRoundId;
 
-                    //decido al azar que player empieza la partida
-                    var playerTurnId = new Random().Next(1, 2) == 1 ? gameState.GameHeader.PlayerId : gameState.GameHeader.Player2Id;
-                    newRound.PlayerTurnId = playerTurnId;
+                //decido al azar que player empieza la partida
+                var playerTurnId = new Random().Next(1, 2) == 1 ? gameHeader.PlayerId : gameHeader.Player2Id;
+                gameHeader.GameRound.PlayerTurnId = playerTurnId;
 
-                    //obtnego el modelo que contendra los objetos de las cartas
-                    gameState.GameHeader.GameRound = newRound;
-                    gameState.ActualGameRound = new GameRoundModel(newRound, gameState.GameHeader.PlayerId == userId ? ActualPlayerEnum.Player : ActualPlayerEnum.Player2);
-                    //guardar este cambio
-                    db.SaveChanges();
-                }
-                else
-                {
-                    //esperando que el player2 acepte
-                    return gameState;
-                }
+                //guardar este cambio que contiene un nuevo gameround.
+                updateEntity = true;
             }
-            return gameState;
+
+            if (updateEntity)
+            { 
+                Context.UpdateGameEntity(gameHeader); 
+            }
+
+            return new GameHeaderModel(gameHeader, userId); 
         }
 
 
@@ -136,50 +129,39 @@ namespace Service
             return gameRound;
         }
 
-        public static void EndTurn(GameHeaderModel gameState, Context db)
+        public static void EndTurn(GameHeaderModel gameState)
         {
-            gameState.GameHeader.GameRound.CardPits = string.Join('|', gameState.ActualGameRound.CardPitsObj.Select(p => Card.ToStringList(p.Value)));
-            gameState.GameHeader.GameRound.AvailableCards = Card.ToStringList(gameState.ActualGameRound.AvailableCardsObj);
+            var header = Context.GetGameHeader(gameState.GameId.ToString());
 
-            switch (gameState.ActualGameRound.ActualPlayer)
-            {
-                case ActualPlayerEnum.Player:
+            header.GameRound.CardPits = string.Join('|', gameState.ActualGameRound.CardPitsObj.Select(p => Card.ToStringList(p.Value)));
+            header.GameRound.AvailableCards = Card.ToStringList(gameState.ActualGameRound.AvailableCardsObj);
 
-                    gameState.GameHeader.GameRound.PlayerCards = Card.ToStringList(gameState.ActualGameRound.PlayerCardsObj);
-                    gameState.GameHeader.GameRound.PlayerLifeCards = Card.ToStringList(gameState.ActualGameRound.PlayerLifeCardsObj);
-                    gameState.GameHeader.GameRound.PlayerTurnId = gameState.GameHeader.Player2Id;
-                    break;
-                case ActualPlayerEnum.Player2:
+            header.GameRound.PlayerCards = Card.ToStringList(gameState.ActualGameRound.Player1Cards.PlayerCardsObj);
+            header.GameRound.PlayerLifeCards = Card.ToStringList(gameState.ActualGameRound.Player1Cards.PlayerLifeCardsObj);
+            header.GameRound.Player2Cards = Card.ToStringList(gameState.ActualGameRound.Player2Cards.PlayerCardsObj);
+            header.GameRound.Player2LifeCards = Card.ToStringList(gameState.ActualGameRound.Player2Cards.PlayerLifeCardsObj);
 
-                    gameState.GameHeader.GameRound.Player2Cards = Card.ToStringList(gameState.ActualGameRound.PlayerCardsObj);
-                    gameState.GameHeader.GameRound.Player2LifeCards = Card.ToStringList(gameState.ActualGameRound.PlayerLifeCardsObj);
-                    gameState.GameHeader.GameRound.PlayerTurnId = gameState.GameHeader.PlayerId;
-                    break;
-            }
+            header.GameRound.PlayerTurnId = gameState.ActualGameRound.Player1Cards.PlayerTurn ? gameState.ActualGameRound.Player2Cards.PlayerId : gameState.ActualGameRound.Player1Cards.PlayerId;
 
-            db.SaveChanges();
-
+            Context.UpdateGameEntity(header);
         }
 
-        public static GameHeader CreateNewGame(string userId, Person user, DataService.Context db)
+        public static GameHeader CreateNewGame(string userId, Person user)
         {
-            GameHeader gH = new GameHeader();
-            gH.GameId = Guid.NewGuid();
-            gH.PlayerId = userId;
-            gH.PlayerRoundsWins = 0;
-            gH.Player2RoundsWins = 0;
-            gH.RoundsCount = 0;
-            gH.PlayerPoints = 0;
-            gH.Player2Points = 0;
-            gH.PlayerName = user.Names.FirstOrDefault()?.DisplayName;
-            gH.PlayerPhoto = user.Photos.FirstOrDefault()?.Url;
+            GameHeader header = new GameHeader();
+            header.GameId = Guid.NewGuid();
+            header.PlayerId = userId;
+            header.PlayerRoundsWins = 0;
+            header.Player2RoundsWins = 0;
+            header.RoundsCount = 0;
+            header.PlayerPoints = 0;
+            header.Player2Points = 0;
+            header.PlayerName = user.Names.FirstOrDefault()?.DisplayName;
+            header.PlayerPhoto = user.Photos.FirstOrDefault()?.Url;
 
-            db.AddGameHeader(gH);
+            Context.AddGameHeader(header);
 
-            return gH;
+            return header;
         }
-
-
-
     }
 }

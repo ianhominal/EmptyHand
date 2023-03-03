@@ -10,12 +10,11 @@ namespace Domain.Models
     public class PlayerCardsModel
     {
 
-        public PlayerCardsModel(string playerCards, string playerLifeCards, string playerId, int playerPoints, int playerRoundsWins, string playerName, string playerPhotoURL, bool isPlayerTurn)
+        public PlayerCardsModel(string playerCards, string playerLifeCards, string playerId, int playerPoints, int playerRoundsWins, string playerName, string playerPhotoURL)
         {
-            this.PlayerTurn = isPlayerTurn;
             this.PlayerId = playerId;
-            this.PlayerLifeCardsObj = Card.GetCards(playerCards);
-            this.PlayerCardsObj = Card.GetCards(playerLifeCards);
+            this.PlayerLifeCardsObj = Card.GetCards(playerLifeCards);
+            this.PlayerCardsObj = Card.GetCards(playerCards);
 
             this.PlayerPoints = playerPoints;
             this.PlayerRoundsWins = playerRoundsWins;
@@ -24,7 +23,6 @@ namespace Domain.Models
             this.PlayerPhoto = playerPhotoURL;
         }
 
-        public bool PlayerTurn { get; set; }
         public string PlayerId { get; set; }
         public List<Card> PlayerCardsObj { get; set; }
         public List<Card> PlayerLifeCardsObj { get; set; }

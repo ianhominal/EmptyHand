@@ -27,12 +27,15 @@ namespace DataService
 
         public static GameHeader GetGameHeader(string guid)
         {
+            RefreshGameData(guid);
             using (EmptyHandDBEntities context = new EmptyHandDBEntities())
             {
                 Guid gameId;
                 if (Guid.TryParse(guid, out gameId))
                 {
-                    return context.GameHeaders.Where(g => g.GameId == gameId)?.FirstOrDefault();
+                    var gameHeader = context.GameHeaders.Include("GameRound").Where(g => g.GameId == gameId)?.FirstOrDefault();
+
+                    return gameHeader;
                 }
                 else return null;
             }
@@ -78,6 +81,11 @@ namespace DataService
                     if (headerEntity.GameRound != null && gH.GameRound != null)
                     {
                         context.Entry(headerEntity.GameRound).CurrentValues.SetValues(gH.GameRound);
+                    }
+                    else if (gH.GameRound != null)
+                    {
+                        // Crea una nueva entidad GameRound y asóciala al GameHeader
+                        headerEntity.GameRound = gH.GameRound;
                     }
 
                     // Guarda los cambios en la base de datos

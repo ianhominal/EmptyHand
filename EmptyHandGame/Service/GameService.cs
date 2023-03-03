@@ -32,7 +32,7 @@ namespace Service
             if (gameHeader.Player2Id != null && gameHeader.Player2Id != userId && gameHeader.PlayerId != userId) return null;
 
             //si la partida tiene 1 solo jugador y es quien intenta acceder no puede.
-            if (gameHeader.GameRound == null && gameHeader.PlayerId == userId) return null;
+            if (gameHeader.GameRound == null && gameHeader.PlayerId == userId) return new GameHeaderModel(gameHeader, userId);
 
             else if (gameHeader.PlayerId != userId)
             {
@@ -141,7 +141,7 @@ namespace Service
             header.GameRound.Player2Cards = Card.ToStringList(gameState.ActualGameRound.Player2Cards.PlayerCardsObj);
             header.GameRound.Player2LifeCards = Card.ToStringList(gameState.ActualGameRound.Player2Cards.PlayerLifeCardsObj);
 
-            header.GameRound.PlayerTurnId = gameState.ActualGameRound.Player1Cards.PlayerTurn ? gameState.ActualGameRound.Player2Cards.PlayerId : gameState.ActualGameRound.Player1Cards.PlayerId;
+            header.GameRound.PlayerTurnId = gameState.ActualGameRound.PlayerTurnId;
 
             Context.UpdateGameEntity(header);
         }

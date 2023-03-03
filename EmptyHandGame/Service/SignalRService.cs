@@ -30,13 +30,13 @@ namespace Service
             var httpClient = new HttpClient(handler);
 
             _connection = new HubConnectionBuilder()
-                .WithUrl("https://181.171.133.9:44331/GameHub", options =>
+                .WithUrl("https://localhost:44331/GameHub", options =>
                 {
                     options.HttpMessageHandlerFactory = _ => handler;
                 }).Build();
 
             //_connection = new HubConnectionBuilder()
-            //    .WithUrl("https://181.171.133.9:44331/GameHub")
+            //    .WithUrl("https://localhost:44331/GameHub")
             //    .Build();
 
             _gameUpdater = gameUpdater;
@@ -45,7 +45,7 @@ namespace Service
             // Define un método para manejar el evento "UpdateGameState"
             _connection.On<string>("UpdateGameState", gameGuid =>
             {
-                Context.RefreshGameData(gameGuid);
+                //Context.RefreshGameData(gameGuid);
 
                 _gameUpdater.UpdateGame();
             });
@@ -63,6 +63,10 @@ namespace Service
 
         public async Task EndTurn(string gameGuid)
         {
+            if(_connection.State != HubConnectionState.Connected)
+            {
+                await Conectar();
+            }
             await _connection.InvokeAsync("EndTurn", gameGuid);
         }
     }

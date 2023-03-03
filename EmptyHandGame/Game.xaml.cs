@@ -40,7 +40,6 @@ namespace EmptyHandGame
         PlayerCardsModel actualPlayerInfo;
         PlayerCardsModel enemyPlayerInfo;
 
-        string playerTurnId;
 
         private SignalRService signalRClient;
 
@@ -71,9 +70,8 @@ namespace EmptyHandGame
                 DrawEnemyLifeCards();
                 GenerateDeckAndPits();
 
-                playerTurnId = gameState.ActualGameRound.Player1Cards.PlayerTurn ? gameState.ActualGameRound.Player2Cards.PlayerId : gameState.ActualGameRound.Player1Cards.PlayerId;
 
-                var txtTurno = playerTurnId == userId ? "Es tu turno" : "Turno del otro jugador";
+                var txtTurno = gameState.ActualGameRound.PlayerTurnId == userId ? "Es tu turno" : "Turno del otro jugador";
                 txtTurnoActual.Text = txtTurno;
                 turnStarted = false;
             });
@@ -352,6 +350,9 @@ namespace EmptyHandGame
 
         private async void BtnEndTurn_Click(object sender, RoutedEventArgs e)
         {
+            gameState.ActualGameRound.Player1Cards = actualPlayerInfo.PlayerId == gameState.ActualGameRound.Player1Cards.PlayerId? actualPlayerInfo : enemyPlayerInfo;
+            gameState.ActualGameRound.Player2Cards = actualPlayerInfo.PlayerId == gameState.ActualGameRound.Player1Cards.PlayerId ? enemyPlayerInfo : actualPlayerInfo; ;
+            gameState.ActualGameRound.PlayerTurnId = enemyPlayerInfo.PlayerId;
             GameService.EndTurn(gameState);
             await signalRClient.EndTurn(gameState.GameId.ToString());
             UpdateGame();
@@ -580,7 +581,7 @@ namespace EmptyHandGame
         MaterialDialog dialogExample;
         private void GetCardsFromDeck()
         {
-            if (playerTurnId == userId)
+            if (gameState.ActualGameRound.PlayerTurnId == userId)
             {
                 if (turnStarted == false)
                 {
@@ -622,7 +623,7 @@ namespace EmptyHandGame
                 if (dialogExample == null)
                 {
                     string turnoStr;
-                    if (playerTurnId == actualPlayerInfo.PlayerId) 
+                    if (gameState.ActualGameRound.PlayerTurnId == actualPlayerInfo.PlayerId) 
                     {
                         turnoStr = actualPlayerInfo.PlayerName;
                     }
@@ -646,64 +647,6 @@ namespace EmptyHandGame
             await signalRClient.Conectar();
 
         }
-
-
-        //private void DrawDeck()
-        //{
-        //    var deckGrid = new Grid();
-
-        //    deckGrid.HorizontalAlignment = HorizontalAlignment.Stretch;
-        //    deckGrid.VerticalAlignment = VerticalAlignment.Stretch;
-
-        //    for (int i = 0; i <= 3; i++)
-        //    {
-        //        deckGrid.RowDefinitions.Add(new RowDefinition());
-        //    }
-
-        //    for (int i = 0; i <= 12; i++)
-        //    {
-        //        deckGrid.ColumnDefinitions.Add(new ColumnDefinition());
-        //    }
-
-
-        //    foreach (var card in deck)
-        //    {
-
-        //        var cardImage = card.Image;
-
-        //        Grid.SetColumn(cardImage, card.Number);
-
-        //        switch (card.Suit)
-        //        {
-        //            case "Diamonds":
-        //                {
-        //                    Grid.SetRow(cardImage, 0);
-        //                    break;
-        //                }
-        //            case "Spades":
-        //                {
-        //                    Grid.SetRow(cardImage, 1);
-        //                    break;
-        //                }
-        //            case "Clubs":
-        //                {
-        //                    Grid.SetRow(cardImage, 2);
-        //                    break;
-        //                }
-        //            case "Hearts":
-        //                {
-        //                    Grid.SetRow(cardImage, 3);
-        //                    break;
-        //                }
-        //        }
-
-        //        deckGrid.Children.Add(cardImage);
-        //    }
-
-        //    RowDeck.Children.Add(deckGrid);
-        //}
-
-
 
     }
 }

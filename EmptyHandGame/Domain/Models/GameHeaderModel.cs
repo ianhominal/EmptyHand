@@ -18,7 +18,7 @@ namespace Domain.Models
 
             if (header.GameRound != null)
             {
-                ActualGameRound = new GameRoundModel(header.GameRound,header.PlayerId,header.Player2Id, header.PlayerRoundsWins, header.Player2RoundsWins, header.PlayerPoints, header.Player2Points,header.PlayerName, header.Player2Name, header.PlayerPhoto, header.Player2Photo, userId);
+                ActualGameRound = new GameRoundModel(header.GameRound,header.PlayerId,header.Player2Id, header.PlayerRoundsWins, header.Player2RoundsWins, header.PlayerPoints, header.Player2Points,header.PlayerName, header.Player2Name, header.PlayerPhoto, header.Player2Photo);
             }
         }
 

@@ -53,7 +53,6 @@ namespace EmptyHandGame
             signalRClient = new SignalRService(this);
 
 
-            DrawPlayersInfo();
             UpdateGame();
 
         }
@@ -62,6 +61,11 @@ namespace EmptyHandGame
         {
             Dispatcher.Invoke(() => {
                 gameState = GameService.ToModel(Context.GetGameHeader(gameState.GameId.ToString()), userId, user);
+                actualPlayerInfo = gameState.ActualGameRound.Player1Cards.PlayerId == userId ? gameState.ActualGameRound.Player1Cards : gameState.ActualGameRound.Player2Cards;
+                enemyPlayerInfo = gameState.ActualGameRound.Player1Cards.PlayerId == userId ? gameState.ActualGameRound.Player2Cards : gameState.ActualGameRound.Player1Cards;
+
+                DrawPlayersInfo();
+
                 btnEndTurn.IsEnabled = false;
 
                 DrawPlayerHand();
@@ -80,9 +84,7 @@ namespace EmptyHandGame
 
         private void DrawPlayersInfo()
         {
-            actualPlayerInfo = gameState.ActualGameRound.Player1Cards.PlayerId == userId ? gameState.ActualGameRound.Player1Cards : gameState.ActualGameRound.Player2Cards;
-            enemyPlayerInfo = gameState.ActualGameRound.Player1Cards.PlayerId == userId ? gameState.ActualGameRound.Player2Cards : gameState.ActualGameRound.Player1Cards;
-
+          
             txtPlayerName.Text = actualPlayerInfo.PlayerName;
             txtEnemyName.Text = enemyPlayerInfo.PlayerName;
 

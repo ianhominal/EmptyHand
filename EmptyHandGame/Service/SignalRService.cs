@@ -25,19 +25,19 @@ namespace Service
 
         public SignalRService(IGameUpdater gameUpdater)
         {
-            var handler = new HttpClientHandler();
-            handler.ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true;
-            var httpClient = new HttpClient(handler);
-
-            _connection = new HubConnectionBuilder()
-                .WithUrl("https://localhost:44331/GameHub", options =>
-                {
-                    options.HttpMessageHandlerFactory = _ => handler;
-                }).Build();
+            //var handler = new HttpClientHandler();
+            //handler.ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true;
+            //var httpClient = new HttpClient(handler);
 
             //_connection = new HubConnectionBuilder()
-            //    .WithUrl("https://localhost:44331/GameHub")
-            //    .Build();
+            //    .WithUrl("https://localhost:44331/GameHub", options =>
+            //    {
+            //        options.HttpMessageHandlerFactory = _ => handler;
+            //    }).Build();
+
+            _connection = new HubConnectionBuilder()
+                .WithUrl("https://signalrtest20230303170401.azurewebsites.net/GameHub")
+                .Build();
 
             _gameUpdater = gameUpdater;
 

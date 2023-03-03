@@ -39,7 +39,6 @@ namespace DataService
                 }
                 else return null;
             }
-
         }
 
         public static void RefreshGameData(string guid)

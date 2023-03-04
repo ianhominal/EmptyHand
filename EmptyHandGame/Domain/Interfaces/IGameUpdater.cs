@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Domain.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,6 +9,6 @@ namespace Domain.Interfaces
 {
     public interface IGameUpdater
     {
-        void UpdateGame();
+        void UpdateGame(GameHeaderModel gameState);
     }
 }

@@ -29,11 +29,6 @@
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
-            <!--<Grid.ColumnDefinitions>
-                <ColumnDefinition Width="0.2*"/>
-                <ColumnDefinition  Width="0.6*"/>
-                <ColumnDefinition  Width="0.2*"/>
-            </Grid.ColumnDefinitions>-->
 
             <Grid Grid.Row="0" Grid.Column="1" Name="RowEnemy">
                 <Grid.RowDefinitions>
@@ -94,7 +89,7 @@
                 <Grid Grid.Row="1" Name="RowPlayerHand" Width="Auto" Height="0">
                 </Grid>
 
-                <Button x:Name="btnEndTurn" Grid.Row="1" IsEnabled="False" Content="EndTurn" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="15" Click="BtnEndTurn_Click" Width="200" Height="50"/>
+                <Button x:Name="btnEndTurn" Grid.Row="1" IsEnabled="{Binding TurnStarted}" Content="EndTurn" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="15" Click="BtnEndTurn_Click" Width="200" Height="50"/>
 
 
             </Grid>

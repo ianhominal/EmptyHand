@@ -7,16 +7,21 @@ using System.Windows.Media;
 using System.Windows.Shapes;
 using Path = System.Windows.Shapes.Path;
 using System.Globalization;
-using DataService;
+using System.Text.Json.Serialization;
 
 namespace Domain.Models
 {
     public class Card
     {
-        public string Suit; //palo
-        public int Number;
-        public bool CanBePlayed;
-        public Canvas Image;
+        public string Suit { get; set; } //palo
+        public int Number { get; set; }
+        public bool CanBePlayed { get; set; }
+
+        [JsonIgnore]
+        public string Rank
+        {
+            get { return Ranks[Number]; }
+        }
 
         public static List<string> Suits = new List<string>() { "D", "P", "T", "C" };
         public static List<string> Ranks = new List<string>() { "A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K" };
@@ -26,6 +31,7 @@ namespace Domain.Models
 
         public static double CardWidth = 100;
         public static double CardHeight = 140;
+
 
         public static List<Card> GetCards(string cardsStr)
         {
@@ -69,7 +75,6 @@ namespace Domain.Models
 
         public static Canvas CreateCardImage(string suit, string rank, bool faceUp = true, bool enable = true)
         {
-            int rankIndex = Ranks.IndexOf(rank);
             string color = (suit == "Hearts" || suit == "Diamonds") ? "Red" : "Black";
 
             Canvas cardCanvas = new Canvas
@@ -257,7 +262,7 @@ namespace Domain.Models
                 cardsString.Add($"{cardSuit}_{Ranks[card.Number]}");
             }
 
-            return string.Join(',',cardsString);
+            return string.Join(',', cardsString);
         }
     }
 }

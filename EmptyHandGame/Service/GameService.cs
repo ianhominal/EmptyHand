@@ -146,9 +146,10 @@ namespace Service
             Context.UpdateGameEntity(header);
         }
 
-        public static GameHeader CreateNewGame(string userId, Person user)
+        public static GameHeaderModel CreateNewGame(string userId, Person user)
         {
-            GameHeader header = new GameHeader();
+
+            GameHeaderModel header = new GameHeaderModel();
             header.GameId = Guid.NewGuid();
             header.PlayerId = userId;
             header.PlayerRoundsWins = 0;

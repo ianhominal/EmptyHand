@@ -1,5 +1,6 @@
 ﻿using DataService;
 using Domain.Interfaces;
+using Domain.Models;
 using Google.Apis.PeopleService.v1.Data;
 using Microsoft.AspNetCore.SignalR.Client;
 using System;
@@ -22,18 +23,11 @@ namespace Service
 
         private readonly HubConnection _connection;
         private readonly IGameUpdater _gameUpdater;
+        private readonly string _userId;
 
-        public SignalRService(IGameUpdater gameUpdater)
+        public SignalRService(IGameUpdater gameUpdater, string userId)
         {
-            //var handler = new HttpClientHandler();
-            //handler.ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => true;
-            //var httpClient = new HttpClient(handler);
-
-            //_connection = new HubConnectionBuilder()
-            //    .WithUrl("https://localhost:44331/GameHub", options =>
-            //    {
-            //        options.HttpMessageHandlerFactory = _ => handler;
-            //    }).Build();
+            _userId = userId;
 
             _connection = new HubConnectionBuilder()
                 .WithUrl("https://signalrtest20230303170401.azurewebsites.net/GameHub")
@@ -43,13 +37,14 @@ namespace Service
 
 
             // Define un método para manejar el evento "UpdateGameState"
-            _connection.On<string>("UpdateGameState", gameGuid =>
+            _connection.On<string,GameHeaderModel>("UpdateGameState", (gameGuid,gameState) =>
             {
-                //Context.RefreshGameData(gameGuid);
-
-                _gameUpdater.UpdateGame();
+                //actualizo el game si pertenece al player de la instancia
+                if(_userId == gameState.ActualGameRound?.Player1?.PlayerId || _userId == gameState.ActualGameRound?.Player2?.PlayerId)
+                {
+                    _gameUpdater.UpdateGame(gameState);
+                }
             });
-
         }
 
         public async Task Conectar()
@@ -61,13 +56,32 @@ namespace Service
             }
         }
 
-        public async Task EndTurn(string gameGuid)
+        public async Task EndTurn(GameHeaderModel gameState)
         {
             if(_connection.State != HubConnectionState.Connected)
             {
                 await Conectar();
             }
-            await _connection.InvokeAsync("EndTurn", gameGuid);
+            await _connection.InvokeAsync("EndTurn", gameState);
+        }
+
+        public async Task CreateGame(PlayerModel player)
+        {
+            if (_connection.State != HubConnectionState.Connected)
+            {
+                await Conectar();
+            }
+            await _connection.InvokeAsync("GreateGame", player);
+        }
+
+
+        public async Task JoinGame(PlayerModel player, GameHeaderModel gameHeader)
+        {
+            if (_connection.State != HubConnectionState.Connected)
+            {
+                await Conectar();
+            }
+            await _connection.InvokeAsync("GreateGame", player, gameHeader);
         }
     }
 

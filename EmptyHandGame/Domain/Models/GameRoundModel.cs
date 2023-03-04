@@ -5,7 +5,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Documents;
-using DataService;
 
 namespace Domain.Models
 {
@@ -18,32 +17,32 @@ namespace Domain.Models
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
-        public GameRoundModel(GameRound gameRound, string player1Id, string player2Id, int player1RoundsWin, int player2RoundsWin, int player1Points, int player2Points, string player1Name, string player2Name, string player1PhotoURL, string player2PhotoURL)
-        {
-            GameRoundId = gameRound.GameRoundId;
-            PlayerTurnId = gameRound.PlayerTurnId;
+        //public GameRoundModel(GameRound gameRound, string player1Id, string player2Id, int player1RoundsWin, int player2RoundsWin, int player1Points, int player2Points, string player1Name, string player2Name, string player1PhotoURL, string player2PhotoURL)
+        //{
+        //    GameRoundId = gameRound.GameRoundId;
+        //    PlayerTurnId = gameRound.PlayerTurnId;
 
-            TurnStarted = false;
+        //    TurnStarted = false;
 
-            Player1Cards = new PlayerCardsModel(gameRound.PlayerCards, gameRound.PlayerLifeCards, player1Id, player1Points, player1RoundsWin, player1Name, player1PhotoURL);
-            Player2Cards = new PlayerCardsModel(gameRound.Player2Cards, gameRound.Player2LifeCards, player2Id, player2Points, player2RoundsWin, player2Name, player2PhotoURL);
+        //    Player1Cards = new PlayerCardsModel(gameRound.PlayerCards, gameRound.PlayerLifeCards, player1Id, player1Points, player1RoundsWin, player1Name, player1PhotoURL);
+        //    Player2Cards = new PlayerCardsModel(gameRound.Player2Cards, gameRound.Player2LifeCards, player2Id, player2Points, player2RoundsWin, player2Name, player2PhotoURL);
 
-            AvailableCardsObj = Card.GetCards(gameRound.AvailableCards);
+        //    AvailableCardsObj = Card.GetCards(gameRound.AvailableCards);
 
-            var pitsSplit = gameRound.CardPits.Split('|');
-            var pitCount = 0;
+        //    var pitsSplit = gameRound.CardPits.Split('|');
+        //    var pitCount = 0;
 
-            CardPitsObj = new Dictionary<int, List<Card>>();
-            foreach (var pit in pitsSplit)
-            {
-                CardPitsObj[pitCount] = Card.GetCards(pit);
-                pitCount++;
-            }
-        }
+        //    CardPitsObj = new Dictionary<int, List<Card>>();
+        //    foreach (var pit in pitsSplit)
+        //    {
+        //        CardPitsObj[pitCount] = Card.GetCards(pit);
+        //        pitCount++;
+        //    }
+        //}
 
         public Guid GameRoundId { get; set; }
-        public PlayerCardsModel Player1Cards { get; set; }
-        public PlayerCardsModel Player2Cards { get; set; }
+        public PlayerModel Player1 { get; set; }
+        public PlayerModel Player2 { get; set; }
 
         public string PlayerTurnId { get; set; }
 

@@ -1,0 +1,72 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage x:Class="MAUI.EmptyHand.MainPage"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
+    <ContentPage.Content>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+
+            <Grid Padding="32" Margin="16" Grid.Row="0">
+                <StackLayout HorizontalOptions="Center">
+                    <Grid x:Name="imgUser" HorizontalOptions="Center"/>
+                    <Label  x:Name="txtUserName" HorizontalOptions="Center" FontAttributes="Bold" Margin="0,10,0,0"/>
+                </StackLayout>
+
+                <Label VerticalOptions="Center" HorizontalOptions="Center">Empty Hand</Label>
+            </Grid>
+
+                <StackLayout Grid.Row="1" x:Name="StkLogin" IsVisible="True">
+                <Button Text="Login" Margin="15" HeightRequest="75" Clicked="Login_Click"/>
+            </StackLayout>
+
+            <Grid x:Name="GrdMainMenu" Grid.Row="1" IsVisible="False" >
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <Button Text="New Game" Grid.Row="0" Margin="15" HeightRequest="75" Clicked="NewGame_Click"/>
+
+                <Frame Grid.Row="1" BorderColor="#FF673AB7" HasShadow="True" Margin="15,0,15,0">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="30"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <Grid  VerticalOptions="Start" BackgroundColor="#FF673AB7" HeightRequest="30">
+                            <Label Text="ONLINE GAMES" TextColor="White" HorizontalOptions="Start" Margin="15,0,0,0" VerticalOptions="Center"/>
+                        </Grid>
+                        <ScrollView Grid.Row="1">
+                            <Grid x:Name="GrdGameList"></Grid>
+                        </ScrollView>
+                    </Grid>
+
+                </Frame>
+
+
+                <Button x:Name="btnLogout" Grid.Row="2" Text="Logout" Margin="15" HeightRequest="75" Clicked="Logout_Click"/>
+            </Grid>
+
+            <Grid x:Name="GrdWaitingPlayer2" Grid.Row="1" IsVisible="False" BackgroundColor="#FF000000">
+                <StackLayout HorizontalOptions="Center" VerticalOptions="Center">
+                    <Label Text="Esperando al player 2..." TextColor="White"  FontSize="30"></Label>
+                    <Button x:Name="btnCancelCreateGame" Margin="0,20,0,0"  Text="Cancelar" Clicked="BtnCancelCreateGame_Click"></Button>
+                </StackLayout>
+            </Grid>
+
+            <Grid Row="1" IsVisible="False" BackgroundColor="#FF000000" x:Name="GrdGameClosed">
+                <StackLayout HorizontalOptions="Center" VerticalOptions="Center">
+                    <Label TextColor="White" FontSize="30" x:Name="txtGameClosed"/>
+                    <Button Text="Aceptar" x:Name="btnAceptarGameClosed" Margin="0,20,0,0" Clicked="btnAceptarGameClosed_Click"/>
+                </StackLayout>
+            </Grid>
+
+        </Grid>
+
+    </ContentPage.Content>
+</ContentPage>

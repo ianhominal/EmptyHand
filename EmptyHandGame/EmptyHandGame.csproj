@@ -5,6 +5,8 @@
     <TargetFramework>net6.0-windows</TargetFramework>
     <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
+    <SignAssembly>False</SignAssembly>
+    <PackageIcon>cardIcon.ico</PackageIcon>
   </PropertyGroup>
 
   <ItemGroup>
@@ -16,6 +18,16 @@
     <None Remove="Service\**" />
     <Page Remove="Domain\**" />
     <Page Remove="Service\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="Sound\Player-Turn.wav" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Sound\Player-Turn.wav">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>
@@ -38,6 +50,13 @@
   <ItemGroup>
     <ProjectReference Include="Domain\Domain.csproj" />
     <ProjectReference Include="Service\Service.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="cardIcon.ico">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
   </ItemGroup>
 
 </Project>

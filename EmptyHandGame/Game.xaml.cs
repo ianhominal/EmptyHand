@@ -1,26 +1,15 @@
-﻿using DataService;
-using Domain.Interfaces;
+﻿using Domain.Interfaces;
 using Domain.Models;
-using Google.Apis.PeopleService.v1.Data;
-using MahApps.Metro.Controls;
-using MaterialDesignThemes.Wpf;
-using Microsoft.Win32;
-using Newtonsoft.Json;
 using Service;
 using System;
-using System.CodeDom;
-using System.Data.Common;
-using System.Data.Entity;
 using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Security.Policy;
+using System.Media;
+using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Animation;
-using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using Card = Domain.Models.Card;
 
@@ -31,42 +20,42 @@ namespace EmptyHandGame
     /// </summary>
     public partial class Game : Window, IGameUpdater
     {
-        GameHeaderModel gameState;
-        
+        GameModel gameState;
+
         string userId;
         Canvas deckImg;
-        //bool turnStarted;
+        bool turnStarted;
+        bool playerPlayed;
 
         PlayerModel actualPlayerInfo;
         PlayerModel enemyPlayerInfo;
 
         private SignalRService signalRClient;
 
-        public Game(GameHeaderModel _gameState, string _userId)
+        public Game(GameModel _gameState, string _userId)
         {
             InitializeComponent();
 
             userId = _userId;
-            signalRClient = new SignalRService(this,_userId);
 
-
-            UpdateGame(_gameState);
+            turnStarted = false;
+            gameState = _gameState;
+            playerPlayed = false;
+            //UpdateGame(_gameState);
+            turnSoundPlayed = false;
 
         }
 
-        public void UpdateGame(GameHeaderModel newGameState)
+        public void UpdateGame(GameModel newGameState)
         {
-            Dispatcher.Invoke(() => {
-
-                newGameState.ActualGameRound.TurnStarted = false;
-
+            Dispatcher.Invoke(() =>
+            {
                 gameState = newGameState;
                 DataContext = gameState;
 
-                actualPlayerInfo = gameState.ActualGameRound.Player1.PlayerId == userId ? gameState.ActualGameRound.Player1: gameState.ActualGameRound.Player2;
-                enemyPlayerInfo = gameState.ActualGameRound.Player1.PlayerId == userId ? gameState.ActualGameRound.Player2 : gameState.ActualGameRound.Player1;
+                actualPlayerInfo = gameState.Player1.PlayerId == userId ? gameState.Player1 : gameState.Player2;
+                enemyPlayerInfo = gameState.Player1.PlayerId == userId ? gameState.Player2 : gameState.Player1;
 
-                //btnEndTurn.IsEnabled = false;
 
                 DrawPlayersInfo();
                 DrawPlayerHand();
@@ -74,17 +63,46 @@ namespace EmptyHandGame
                 GenerateDeckAndPits();
                 DrawEnemyHand();
                 DrawEnemyLifeCards();
+
+
+                btnEndTurn.IsEnabled = playerPlayed;
+
+
+                GrdWaiting.Visibility = Visibility.Collapsed;
+
+                PlayTurnSound();
+
+
             });
         }
 
 
+
+        bool turnSoundPlayed;
+        private void PlayTurnSound()
+        {
+            if(actualPlayerInfo.PlayerId ==  gameState.PlayerTurnId && !turnStarted && !turnSoundPlayed)
+            {
+                turnSoundPlayed = true;
+
+                SoundPlayer player = new SoundPlayer();
+                player.SoundLocation = AppDomain.CurrentDomain.BaseDirectory + "\\Sound\\Player-Turn.wav";
+                player.Play();
+            }
+        }
+
         private void DrawPlayersInfo()
         {
-          
             txtPlayerName.Text = actualPlayerInfo.PlayerName;
-            txtEnemyName.Text = enemyPlayerInfo.PlayerName;
+            txtPlayerPoints.Text = $"{actualPlayerInfo.PlayerPoints}";
+            // txtPlayerRounds.Text = $"{actualPlayerInfo.PlayerRoundsWins}";
 
-            txtTurnoActual.Text = gameState.ActualGameRound?.PlayerTurnId == userId ? "Es tu turno" : "Turno del otro jugador";
+
+            txtEnemyName.Text = enemyPlayerInfo.PlayerName;
+            txtEnemyPoints.Text = $"{enemyPlayerInfo.PlayerPoints}";
+            // txtEnemyRounds.Text = $"{enemyPlayerInfo.PlayerRoundsWins}";
+
+            txtTurnoActual.Text = gameState.PlayerTurnId == userId ? "Es tu turno" : "Turno del otro jugador";
 
             var playerPhoto = actualPlayerInfo.PlayerPhoto;
             var enemyPhoto = enemyPlayerInfo.PlayerPhoto;
@@ -92,8 +110,8 @@ namespace EmptyHandGame
 
             if (!string.IsNullOrEmpty(playerPhoto))
             {
-                Ellipse playerImg = GetUserPhoto(playerPhoto);
-                Ellipse playerBg = GetBackgroundUserEllipse();
+                Ellipse playerImg = PlayerModel.GetUserPhoto(playerPhoto);
+                Ellipse playerBg = PlayerModel.GetBackgroundUserEllipse();
 
 
                 imgPlayer.Children.Clear();
@@ -106,8 +124,8 @@ namespace EmptyHandGame
 
             if (!string.IsNullOrEmpty(enemyPhoto))
             {
-                Ellipse enemyImg = GetUserPhoto(enemyPhoto);
-                Ellipse enemyBg = GetBackgroundUserEllipse();
+                Ellipse enemyImg = PlayerModel.GetUserPhoto(enemyPhoto);
+                Ellipse enemyBg = PlayerModel.GetBackgroundUserEllipse();
 
 
                 imgEnemy.Children.Clear();
@@ -117,51 +135,8 @@ namespace EmptyHandGame
 
                 imgEnemy.UpdateLayout();
             }
-
-
         }
 
-        private Ellipse GetUserPhoto(string url)
-        {
-            BitmapImage bitmap = new BitmapImage();
-            bitmap.BeginInit();
-            bitmap.UriSource = new Uri(url, UriKind.Absolute);
-            bitmap.EndInit();
-
-            // Crea un nuevo objeto "ImageBrush" y asigna la imagen cargada a su propiedad "ImageSource".
-            ImageBrush imageBrush = new ImageBrush();
-            imageBrush.ImageSource = bitmap;
-
-
-
-            Ellipse ellipse = new Ellipse();
-            ellipse.Width = 100;
-            ellipse.Height = 100;
-            //Color color = (Color)ColorConverter.ConvertFromString("#FF673AB7");
-            //ellipse.Stroke = new SolidColorBrush(color);
-            ////21005D
-            //ellipse.StrokeThickness = 4;
-
-            // Asigna el objeto "ImageBrush" a la propiedad "Fill" del objeto "Ellipse".
-            ellipse.Fill = imageBrush;
-
-            return ellipse;
-
-        }
-
-        private Ellipse GetBackgroundUserEllipse()
-        {
-            Ellipse ellipsePlayerBg = new Ellipse();
-            ellipsePlayerBg.Width = 106;
-            ellipsePlayerBg.Height = 106;
-            //ellipsePlayerBg.Margin = new Thickness(0, 0, 0, 0);
-
-            Color color = (Color)ColorConverter.ConvertFromString("#21005D");
-
-            ellipsePlayerBg.Fill = new SolidColorBrush(color);
-
-            return ellipsePlayerBg;
-        }
 
 
         private void GenerateDeckAndPits()
@@ -175,10 +150,12 @@ namespace EmptyHandGame
 
             deckGrid.ColumnDefinitions.Add(new ColumnDefinition());
 
-            deckImg = Card.CreateCardImage("Diamonds", "A", false, gameState.ActualGameRound?.AvailableCardsObj.Count > 0);
+            deckImg = Card.CreateCardImage("Diamonds", "A", false, gameState.AvailableCards.Count > 0);
             deckImg.Margin = new Thickness(5, 5, 20, 5);
 
-            deckImg.MouseLeftButtonUp += (s, e) => { GetCardsFromDeck(); };
+            deckImg.MouseLeftButtonUp += async (s, e) => { await GetCardsFromDeck(); };
+            deckImg.MouseEnter += (s, e) => { DeckCard_MouseEnter(deckImg); };
+            deckImg.MouseLeave += (s, e) => { DeckCard_MouseLeave(deckImg); };
 
             Grid.SetColumn(deckImg, 0);
 
@@ -187,7 +164,7 @@ namespace EmptyHandGame
 
             var cardCount = 1;
 
-            foreach (var pit in gameState.ActualGameRound.CardPitsObj)
+            foreach (var pit in gameState.CardPits)
             {
                 deckGrid.ColumnDefinitions.Add(new ColumnDefinition());
 
@@ -211,7 +188,7 @@ namespace EmptyHandGame
                     parent.Children.Remove(cardImage);
                 }
 
-                
+
                 deckGrid.Children.Add(cardImage);
 
                 cardCount++;
@@ -222,6 +199,35 @@ namespace EmptyHandGame
 
         }
 
+        private void DeckCard_MouseLeave( Canvas card)
+        {
+            bool canBePlayed = gameState.PlayerTurnId == userId && turnStarted == false;
+            Mouse.OverrideCursor = null;
+
+            if (canBePlayed)
+            {
+                card.Margin = new Thickness(5, 5, 20, 5);
+            }
+        }
+
+        private void DeckCard_MouseEnter( Canvas card)
+        {
+            bool canBePlayed = gameState.PlayerTurnId == userId && turnStarted == false;
+
+            if (!canBePlayed)
+            {
+                Mouse.OverrideCursor = Cursors.No;
+            }
+            else
+            {
+                Mouse.OverrideCursor = Cursors.Hand;
+
+                card.Margin = new Thickness(5, 5, 20, 15);
+            }
+
+        }
+
+
         private void DrawEnemyHand()
         {
             RowEnemyHand.Children.RemoveRange(0, RowEnemyHand.Children.Count);
@@ -230,7 +236,7 @@ namespace EmptyHandGame
             handGrid.HorizontalAlignment = HorizontalAlignment.Center;
             handGrid.VerticalAlignment = VerticalAlignment.Bottom;
 
-            var handCards = enemyPlayerInfo.PlayerCardsObj;
+            var handCards = enemyPlayerInfo.PlayerCards;
 
 
             //defino las columnas
@@ -240,7 +246,7 @@ namespace EmptyHandGame
                 card.CanBePlayed = false;
                 handGrid.ColumnDefinitions.Add(new ColumnDefinition());
 
-                var cardImage = Card.CreateCardImage("Diamonds", "A", false, gameState.ActualGameRound?.AvailableCardsObj.Count > 0);
+                var cardImage = Card.CreateCardImage("Diamonds", "A", false, gameState.AvailableCards.Count > 0);
                 cardImage.Margin = new Thickness(5);
                 Grid.SetColumn(cardImage, cardCount);
 
@@ -269,7 +275,7 @@ namespace EmptyHandGame
             playerLifeGrid.HorizontalAlignment = HorizontalAlignment.Right;
             playerLifeGrid.VerticalAlignment = VerticalAlignment.Bottom;
 
-            var lifeCards = enemyPlayerInfo.PlayerLifeCardsObj;
+            var lifeCards = enemyPlayerInfo.PlayerLifeCards;
 
             //for (int i = 0; i <= 3; i++)
             //{
@@ -284,7 +290,7 @@ namespace EmptyHandGame
 
                 card.CanBePlayed = false;
 
-                var cardImage = Card.CreateCardImage("Diamonds", "A", false, gameState.ActualGameRound?.AvailableCardsObj.Count > 0);
+                var cardImage = Card.CreateCardImage("Diamonds", "A", false, gameState.AvailableCards.Count > 0);
 
                 cardImage.Margin = new Thickness(5);
                 Grid.SetColumn(cardImage, cardCount);
@@ -314,7 +320,7 @@ namespace EmptyHandGame
             playerLifeGrid.HorizontalAlignment = HorizontalAlignment.Left;
             playerLifeGrid.VerticalAlignment = VerticalAlignment.Bottom;
 
-            var lifeCards = actualPlayerInfo.PlayerLifeCardsObj;
+            var lifeCards = actualPlayerInfo.PlayerLifeCards;
 
             var cardCount = 0;
             foreach (var card in lifeCards)
@@ -323,13 +329,13 @@ namespace EmptyHandGame
 
                 card.CanBePlayed = true;
 
-                var cardImage = Card.CreateCardImage("Diamonds", "A", false, gameState.ActualGameRound?.AvailableCardsObj.Count > 0); ;
+                var cardImage = Card.CreateCardImage("Diamonds", "A", false, gameState.AvailableCards.Count > 0); ;
                 cardImage.Margin = new Thickness(5);
                 Grid.SetColumn(cardImage, cardCount);
 
-                cardImage.MouseEnter += (s, e) => { LifeCard_MouseEnter(card.Number, cardImage); }; 
+                cardImage.MouseEnter += (s, e) => { LifeCard_MouseEnter(card.Number, cardImage); };
                 cardImage.MouseLeave += (s, e) => { LifeCard_MouseLeave(card.Number, cardImage); };
-                cardImage.MouseLeftButtonUp += (s, e) => { LifeCard_Click(cardImage, card); };
+                cardImage.MouseLeftButtonUp += async (s, e) => { await LifeCard_Click(cardImage, card); };
 
                 // Obtener el elemento padre del Canvas
                 var parent = VisualTreeHelper.GetParent(cardImage) as Grid;
@@ -352,14 +358,10 @@ namespace EmptyHandGame
 
         private async void BtnEndTurn_Click(object sender, RoutedEventArgs e)
         {
-            gameState.ActualGameRound.Player1 = actualPlayerInfo.PlayerId == gameState.ActualGameRound.Player1.PlayerId? actualPlayerInfo : enemyPlayerInfo;
-            gameState.ActualGameRound.Player2 = actualPlayerInfo.PlayerId == gameState.ActualGameRound.Player1.PlayerId ? enemyPlayerInfo : actualPlayerInfo; ;
-            gameState.ActualGameRound.PlayerTurnId = enemyPlayerInfo.PlayerId;
-            GameService.EndTurn(gameState);
-
+            turnStarted = false;
+            playerPlayed = false;
+            turnSoundPlayed = false;
             await signalRClient.EndTurn(gameState);
-            
-
         }
 
         private void DrawPlayerHand()
@@ -373,7 +375,7 @@ namespace EmptyHandGame
 
             var maxColums = 20;
 
-            var handCards = actualPlayerInfo.PlayerCardsObj;
+            var handCards = actualPlayerInfo.PlayerCards;
 
             RowPlayerHand.Height = ((int)(handCards.Count / maxColums) + 1) * 150;
             //this.Height = RowEnemy.Height + RowDeck.Height + RowPlayerHand.Height;
@@ -407,8 +409,8 @@ namespace EmptyHandGame
 
             foreach (var card in handCards)
             {
-                card.CanBePlayed = true; 
-                
+                card.CanBePlayed = true;
+
                 var cardImage = Card.CreateCardImage(card.Suit, card.Rank);
                 cardImage.Margin = new Thickness(5);
                 Grid.SetColumn(cardImage, cardCount);
@@ -428,7 +430,7 @@ namespace EmptyHandGame
                     RowPlayerHand.Children.Add(cardImage);
                     cardImage.MouseEnter += (s, e) => { CardImage_MouseEnter(card.Number, cardImage); };
                     cardImage.MouseLeave += (s, e) => { CardImage_MouseLeave(card.Number, cardImage); };
-                    cardImage.MouseLeftButtonUp += (s, e) => { HandCard_Click(cardImage, card); };
+                    cardImage.MouseLeftButtonUp += async (s, e) => { await HandCard_Click(cardImage, card); };
                 }
 
                 if (cardCount < maxColums)
@@ -443,30 +445,31 @@ namespace EmptyHandGame
             }
         }
 
-        private void HandCard_Click(Canvas cardImage, Card card)
+        private async Task HandCard_Click(Canvas cardImage, Card card)
         {
             var availablePit = CardCanBePlayed(card.Number);
-            if (availablePit >= 0 && gameState.ActualGameRound.TurnStarted && card.CanBePlayed)
+            if (availablePit >= 0 && turnStarted && card.CanBePlayed)
             {
                 card.CanBePlayed = false;
-                actualPlayerInfo.PlayerCardsObj.Remove(card);
-                gameState.ActualGameRound.CardPitsObj[availablePit].Add(card);
+                actualPlayerInfo.PlayerCards.Remove(card);
+                gameState.CardPits[availablePit].Add(card);
 
                 cardImage.MouseEnter -= (s, e) => { CardImage_MouseEnter(card.Number, cardImage); };
                 cardImage.MouseLeave -= (s, e) => { CardImage_MouseLeave(card.Number, cardImage); };
-                cardImage.MouseLeftButtonUp -= (s, e) => { HandCard_Click(cardImage, card); };
+                cardImage.MouseLeftButtonUp -= async (s, e) => { await HandCard_Click(cardImage, card); };
 
-                DrawPlayerHand();
-                GenerateDeckAndPits();
+                //DrawPlayerHand();
+                // GenerateDeckAndPits();
 
-                btnEndTurn.IsEnabled = true;
+                playerPlayed = true;
+                await UpdateGameState();
             }
             else
             {
                 var text = string.Empty;
 
                 if (availablePit == 0) text = "Esta carta no puede ser jugada en ningun pozo.";
-                if (!gameState.ActualGameRound.TurnStarted) text = "Debes juntar 2 cartas del mazo antes de jugar.";
+                if (!turnStarted) text = "Debes juntar 2 cartas del mazo antes de jugar.";
 
                 if (dialogExample == null && !string.IsNullOrEmpty(text))
                 {
@@ -484,7 +487,7 @@ namespace EmptyHandGame
             bool canBePlayed = CardCanBePlayed(number) >= 0;
             Mouse.OverrideCursor = null;
 
-            if (gameState.ActualGameRound.TurnStarted && canBePlayed)
+            if (turnStarted && canBePlayed)
             {
                 card.Margin = new Thickness(0, 0, 0, 0);
             }
@@ -493,7 +496,7 @@ namespace EmptyHandGame
         private void CardImage_MouseEnter(int number, Canvas card)
         {
             bool canBePlayed = CardCanBePlayed(number) >= 0;
-            if (gameState.ActualGameRound.TurnStarted == false || canBePlayed == false)
+            if (turnStarted == false || canBePlayed == false)
             {
                 Mouse.OverrideCursor = Cursors.No;
             }
@@ -506,23 +509,23 @@ namespace EmptyHandGame
 
         }
 
-
-        private void LifeCard_Click(Canvas cardImage, Card card)
+        private async Task LifeCard_Click(Canvas cardImage, Card card)
         {
-            if (gameState.ActualGameRound.TurnStarted && card.CanBePlayed)
+            if (turnStarted && card.CanBePlayed)
             {
                 card.CanBePlayed = false;
-                actualPlayerInfo.PlayerLifeCardsObj.Remove(card);
-                gameState.ActualGameRound.CardPitsObj.Add(gameState.ActualGameRound.CardPitsObj.Count,new System.Collections.Generic.List<Card>() { card });
+                actualPlayerInfo.PlayerLifeCards.Remove(card);
+                gameState.CardPits.Add(gameState.CardPits.Count, new System.Collections.Generic.List<Card>() { card });
 
                 cardImage.MouseEnter -= (s, e) => { CardImage_MouseEnter(card.Number, cardImage); };
                 cardImage.MouseLeave -= (s, e) => { CardImage_MouseLeave(card.Number, cardImage); };
-                cardImage.MouseLeftButtonUp -= (s, e) => { HandCard_Click(cardImage, card); };
+                cardImage.MouseLeftButtonUp -= async (s, e) => { await LifeCard_Click(cardImage, card); };
 
-                DrawPlayerLifeCards();
-                GenerateDeckAndPits();
+                //DrawPlayerLifeCards();
+                //GenerateDeckAndPits();
 
-                btnEndTurn.IsEnabled = true;
+                playerPlayed = true;
+                await UpdateGameState();
             }
             else
             {
@@ -543,7 +546,7 @@ namespace EmptyHandGame
             bool canBePlayed = CardCanBePlayed(number) >= 0;
             Mouse.OverrideCursor = null;
 
-            if (gameState.ActualGameRound.TurnStarted && canBePlayed)
+            if (turnStarted && canBePlayed)
             {
                 card.Margin = new Thickness(0, 0, 0, 0);
             }
@@ -551,7 +554,7 @@ namespace EmptyHandGame
 
         private void LifeCard_MouseEnter(int number, Canvas card)
         {
-            if (gameState.ActualGameRound.TurnStarted == false)
+            if (turnStarted == false)
             {
                 Mouse.OverrideCursor = Cursors.No;
             }
@@ -572,7 +575,7 @@ namespace EmptyHandGame
             if (nextCard > 12) { nextCard = 0; }
             if (previousCard < 0) { previousCard = 12; }
 
-            var pitWhereCardCanBePlayed = gameState.ActualGameRound.CardPitsObj.Where(p => p.Value.Last().Number == nextCard || p.Value.Last().Number == previousCard).ToList();
+            var pitWhereCardCanBePlayed = gameState.CardPits.Where(p => p.Value.Last().Number == nextCard || p.Value.Last().Number == previousCard).ToList();
             if (pitWhereCardCanBePlayed.Count > 0)
             {
                 return pitWhereCardCanBePlayed.FirstOrDefault().Key;
@@ -583,13 +586,13 @@ namespace EmptyHandGame
 
 
         MaterialDialog dialogExample;
-        private void GetCardsFromDeck()
+        private async Task GetCardsFromDeck()
         {
-            if (gameState.ActualGameRound.PlayerTurnId == userId)
+            if (gameState.PlayerTurnId == userId)
             {
-                if (gameState.ActualGameRound.TurnStarted == false)
+                if (turnStarted == false)
                 {
-                    if (gameState.ActualGameRound.AvailableCardsObj.Count == 0)
+                    if (gameState.AvailableCards.Count == 0)
                     {
                         var cardColor = Card.GetDisabledCard();
                         deckImg.Children.Add(cardColor);
@@ -597,18 +600,21 @@ namespace EmptyHandGame
                     }
                     else
                     {
-                        var cards = gameState.ActualGameRound.AvailableCardsObj.Take(2).ToList();
+                        var cards = gameState.AvailableCards.Take(2).ToList();
 
-                        actualPlayerInfo.PlayerCardsObj.AddRange(cards);
+                        actualPlayerInfo.PlayerCards.AddRange(cards);
 
                         foreach (var card in cards)
                         {
-                            gameState.ActualGameRound.AvailableCardsObj.Remove(card);
+                            gameState.AvailableCards.Remove(card);
                         }
 
-                        DrawPlayerHand();
+                        //DrawPlayerHand();
+                        CheckIfPlayerCanPlay();
                     }
-                    gameState.ActualGameRound.TurnStarted = true;
+
+                    turnStarted = true;
+                    await UpdateGameState();
                 }
                 else
                 {
@@ -627,7 +633,7 @@ namespace EmptyHandGame
                 if (dialogExample == null)
                 {
                     string turnoStr;
-                    if (gameState.ActualGameRound.PlayerTurnId == actualPlayerInfo.PlayerId) 
+                    if (gameState.PlayerTurnId == actualPlayerInfo.PlayerId)
                     {
                         turnoStr = actualPlayerInfo.PlayerName;
                     }
@@ -645,12 +651,67 @@ namespace EmptyHandGame
         }
 
 
-        private async void Window_Loaded(object sender, RoutedEventArgs e)
+        //private async void Window_Loaded(object sender, RoutedEventArgs e)
+        //{
+
+        //    await signalRClient.Conectar();
+
+        //}
+
+
+        private async Task UpdateGameState()
         {
+            await signalRClient.UpdateGameState(gameState);
+        }
+
+        private async Task CheckIfPlayerCanPlay()
+        {
+            await signalRClient.CheckIfPlayerCanPlay(gameState);
+        }
+
+
+       
+        
+
+
+        private async void GameWindow_Loaded(object sender, RoutedEventArgs e)
+        {
+            signalRClient = new SignalRService("GameHub");
+            signalRClient.SetGameUpdater(this);
 
             await signalRClient.Conectar();
 
+            if(gameState.Player1.PlayerId == userId)
+            {
+                gameState.Player1.PlayerHubId = userId;
+            }
+            else
+            {
+                gameState.Player2.PlayerHubId = userId;
+            }
+
+            await signalRClient.RegisterGameGroup(gameState);
+
+            await signalRClient.UpdateGameState(gameState);
         }
 
+        public void ForceEndTurn()
+        {
+            playerPlayed = false;
+            btnEndTurn.IsEnabled = false;
+        }
+
+        public void CloseGame()
+        {
+            Dispatcher.Invoke(async () =>
+            {
+                this.Close();
+            });
+        }
+
+        private async void Window_Closed(object sender, EventArgs e)
+        {
+            await signalRClient.CloseGame(gameState);
+        }
     }
 }

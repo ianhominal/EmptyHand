@@ -9,6 +9,9 @@ namespace Domain.Interfaces
 {
     public interface IGameUpdater
     {
-        void UpdateGame(GameHeaderModel gameState);
+        void UpdateGame(GameModel gameState);
+        void ForceEndTurn();
+
+        void CloseGame();
     }
 }

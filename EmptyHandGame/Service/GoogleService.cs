@@ -13,6 +13,10 @@ using System.Windows;
 using System.Threading.Tasks;
 using System.Linq;
 using System.Collections.Generic;
+using Google.Apis.Auth;
+using static Google.Apis.Auth.GoogleJsonWebSignature;
+using Google.Apis.Util;
+using System;
 
 namespace Service
 {
@@ -20,35 +24,42 @@ namespace Service
     {
         UserCredential? credential;
 
-        public async Task<Person> GoogleLogin()
+        public async Task<Payload> GoogleLogin()
         {
-            using (var stream = new FileStream("client_secrets.json", FileMode.Open, FileAccess.Read))
+            var clientSecrets = new ClientSecrets
             {
-                credential = await GoogleWebAuthorizationBroker.AuthorizeAsync(
-                    GoogleClientSecrets.FromStream(stream).Secrets,
-                    new[] { PeopleServiceService.Scope.UserinfoProfile, PeopleServiceService.Scope.UserinfoEmail },
-                    "user",
-                    CancellationToken.None,
-                    new FileDataStore("Drive.Auth.Store"));
+                ClientId = "35469603597-htfvps87d81eqfe57r9n65g8iejb41fm.apps.googleusercontent.com",
+                ClientSecret = "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"
+            };
+
+            credential = await GoogleWebAuthorizationBroker.AuthorizeAsync(
+                clientSecrets,
+                new[] { PeopleServiceService.Scope.UserinfoProfile, PeopleServiceService.Scope.UserinfoEmail },
+                "user",
+                CancellationToken.None,
+                new FileDataStore("Drive.Auth.Store"));
+
+            try
+            {
+                if (credential.Token.IsExpired(SystemClock.Default))
+                {
+                    bool success = await credential.RefreshTokenAsync(CancellationToken.None);
+                    if (!success)
+                    {
+                        GoogleLogout();
+                        throw new Exception("Failed to refresh access token.");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                GoogleLogout();
+                throw ex;
             }
 
-            // Create the service.
-            var service = new PeopleServiceService(new BaseClientService.Initializer()
-            {
-                HttpClientInitializer = credential,
-                ApplicationName = "EmptyHand",
-            });
-
-            var peopleRequest = service.People.Get("people/me");
-            peopleRequest.RequestMaskIncludeField = new List<string>() {
-            "person.names" ,
-            "person.photos",
-            "person.names"  };
-
-            var profile =await peopleRequest.ExecuteAsync();
-
-
-            return profile;
+            var payload = await GoogleJsonWebSignature.ValidateAsync(credential.Token.IdToken.ToString());
+            payload.JwtId = credential.Token.IdToken;
+            return payload;
         }
 
 
@@ -61,6 +72,8 @@ namespace Service
 
                 // Eliminar el token de acceso
                 new FileDataStore("Drive.Auth.Store").ClearAsync().Wait();
+
+                credential = null;
             }
         }
 

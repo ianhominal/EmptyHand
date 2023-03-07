@@ -33,46 +33,6 @@ namespace Domain.Models
         public static double CardHeight = 140;
 
 
-        public static List<Card> GetCards(string cardsStr)
-        {
-            var cardList = new List<Card>();
-            if (string.IsNullOrEmpty(cardsStr)) return cardList;
-
-            var cards = cardsStr.Split(',');
-
-            foreach (var card in cards)
-            {
-                var cardProps = card.Split('_');
-
-                var suit = "";
-                switch (cardProps[0].ToString())
-                {
-                    case "C":
-                        suit = "Hearts";
-                        break;
-                    case "D":
-                        suit = "Diamonds";
-                        break;
-                    case "T":
-                        suit = "Clubs";
-                        break;
-                    case "P":
-                        suit = "Spades";
-                        break;
-                }
-
-                cardList.Add(new Card()
-                {
-                    Suit = suit,
-                    Number = Ranks.IndexOf(cardProps[1].ToString()),
-                    Image = CreateCardImage(suit, cardProps[1].ToString())
-                });
-
-            }
-
-            return cardList;
-        }
-
         public static Canvas CreateCardImage(string suit, string rank, bool faceUp = true, bool enable = true)
         {
             string color = (suit == "Hearts" || suit == "Diamonds") ? "Red" : "Black";
@@ -239,30 +199,5 @@ namespace Domain.Models
             return path;
         }
 
-        public static List<string> RandomizeList(List<string> cardList)
-        {
-            Random _rand = new Random();
-            for (int i = cardList.Count - 1; i > 0; i--)
-            {
-                var k = _rand.Next(i + 1);
-                var value = cardList[k];
-                cardList[k] = cardList[i];
-                cardList[i] = value;
-            }
-            return cardList;
-        }
-
-        public static string ToStringList(List<Card> cardList)
-        {
-            List<string> cardsString = new List<string>();
-            foreach (var card in cardList)
-            {
-                var cardSuit = GetSuitChar(card.Suit, false);
-
-                cardsString.Add($"{cardSuit}_{Ranks[card.Number]}");
-            }
-
-            return string.Join(',', cardsString);
-        }
     }
 }

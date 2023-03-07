@@ -10,16 +10,16 @@
       TextElement.Foreground="{DynamicResource MaterialDesignBody}"
       TextElement.FontWeight="Regular"
       TextElement.FontSize="13"
-        Loaded="Window_Loaded"
       TextOptions.TextFormattingMode="Ideal" 
       TextOptions.TextRenderingMode="Auto"     
       MinHeight="600" MinWidth="800"
         WindowStartupLocation="CenterScreen"
         Height="600" Width="800"
         WindowState="Maximized"
+        Loaded="GameWindow_Loaded"
+        Closed="Window_Closed"
       Background="{DynamicResource MaterialDesignPaper}"
-      FontFamily="{DynamicResource MaterialDesignFont}"
-      >
+      FontFamily="{DynamicResource MaterialDesignFont}">
 
     <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
 
@@ -46,6 +46,25 @@
                         <materialDesign:Card Background="#FF673AB7">
                             <StackPanel Orientation="Vertical"  Margin="10,10,35,10">
                                 <TextBlock Name="txtEnemyName" Foreground="#FFFFFF" HorizontalAlignment="Right" FontWeight="Bold"/>
+                                <Grid Margin="0,10,0,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition/>
+                                        <ColumnDefinition/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <TextBlock FontSize="18" Text="Puntos:" Foreground="#FFFFFF" HorizontalAlignment="Left" />
+                                    <TextBlock FontSize="18" Grid.Column="1" Name="txtEnemyPoints" Foreground="#FFFFFF" HorizontalAlignment="Left" />
+                                </Grid>
+
+                                <!--<Grid >
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition/>
+                                        <ColumnDefinition/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <TextBlock Text="Rondas ganadas:" Foreground="#FFFFFF" HorizontalAlignment="Left" />
+                                    <TextBlock Grid.Column="1" Name="txtEnemyRounds" Foreground="#FFFFFF" HorizontalAlignment="Left" />
+                                </Grid>-->
                             </StackPanel>
                         </materialDesign:Card>
                     </materialDesign:Card>
@@ -77,6 +96,26 @@
                         <materialDesign:Card Background="#FF673AB7">
                             <StackPanel Orientation="Vertical"  Margin="35,10,10,10">
                                 <TextBlock Name="txtPlayerName" Foreground="#FFFFFF" HorizontalAlignment="Left" FontWeight="Bold"/>
+
+                                <Grid Margin="0,10,0,0" >
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition/>
+                                        <ColumnDefinition/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <TextBlock FontSize="18" Text="Puntos:" Foreground="#FFFFFF" HorizontalAlignment="Left" />
+                                    <TextBlock FontSize="18" Grid.Column="1" Name="txtPlayerPoints" Foreground="#FFFFFF" HorizontalAlignment="Left" />
+                                </Grid>
+
+                                <!--<Grid >
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition/>
+                                        <ColumnDefinition/>
+                                    </Grid.ColumnDefinitions>
+
+                                    <TextBlock Text="Rondas ganadas:" Foreground="#FFFFFF" HorizontalAlignment="Left" />
+                                    <TextBlock  Grid.Column="1" Name="txtPlayerRounds" Foreground="#FFFFFF" HorizontalAlignment="Left" />
+                                </Grid>-->
                             </StackPanel>
                         </materialDesign:Card>
                     </materialDesign:Card>
@@ -95,7 +134,14 @@
             </Grid>
 
 
-
+            <Grid Name="GrdWaiting" Grid.RowSpan="10" Visibility="Visible" Background="#FF000000">
+                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <TextBlock Text="Cargando partida..." Foreground="White"  FontSize="30"></TextBlock>
+                </StackPanel>
+            </Grid>
         </Grid>
+
+
+     
     </ScrollViewer>
 </Window>

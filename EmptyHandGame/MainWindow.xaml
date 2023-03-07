@@ -13,48 +13,83 @@
         TextOptions.TextRenderingMode="Auto"        
         WindowStartupLocation="CenterScreen"
         WindowState="Normal"
-        Height="600" Width="800"
+        Height="700" Width="800"
+        Closing="Game_Closing"
         Background="{DynamicResource MaterialDesignPaper}"
         FontFamily="{DynamicResource MaterialDesignFont}">
+    
     <Grid Name="GrdPrincipal">
 
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
 
-        <StackPanel>
-            <materialDesign:Card Padding="32" Margin="16">
-                <Grid>
-                    <StackPanel HorizontalAlignment="Left">
-                        <Grid Name="imgUser" HorizontalAlignment="Center"/>
-                        <TextBlock Name="txtUserName" HorizontalAlignment="Center" FontWeight="Bold" Margin="0,10,0,0"/>
-                    </StackPanel>
-                    
-                    <TextBlock Style="{DynamicResource MaterialDesignHeadline3TextBlock}" VerticalAlignment="Center" HorizontalAlignment="Center">Empty Hand</TextBlock>
-                </Grid>
-            </materialDesign:Card>
+        <materialDesign:Card Padding="32" Margin="16" Grid.Row="0">
+            <Grid>
+                <StackPanel HorizontalAlignment="Left">
+                    <Grid Name="imgUser" HorizontalAlignment="Center"/>
+                    <TextBlock Name="txtUserName" HorizontalAlignment="Center" FontWeight="Bold" Margin="0,10,0,0"/>
+                </StackPanel>
 
-
-            <StackPanel Name="StkLogin">
-                <Button Content="Login" Margin="15" Height="75" Click="Login_Click"/>
-            </StackPanel>
+                <TextBlock Style="{DynamicResource MaterialDesignHeadline3TextBlock}" VerticalAlignment="Center" HorizontalAlignment="Center">Empty Hand</TextBlock>
+            </Grid>
+        </materialDesign:Card>
 
 
-            <StackPanel Name="StkMainMenu" Visibility="Collapsed" >
-                <Button Content="New Game" Margin="15" Height="75" Click="NewGame_Click"/>
+        <StackPanel Grid.Row="1" Name="StkLogin" Visibility="Visible">
+            <Button Content="Login" Margin="15" Height="75" Click="Login_Click"/>
+        </StackPanel>
 
+        <Grid Name="GrdMainMenu" Grid.Row="1" Visibility="Collapsed" >
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <Button Content="New Game" Grid.Row="0" Margin="15" Height="75" Click="NewGame_Click"/>
+
+            <Border Grid.Row="1" BorderBrush="#FF673AB7" BorderThickness="3" Margin="15,0,15,0">
                 <Grid>
                     <Grid.RowDefinitions>
-                        <RowDefinition/>
-                        <RowDefinition Height="0.3*"/>
+                        <RowDefinition Height="30"/>
+                        <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
                     
-                    <Button Content="Continue" Margin="15" Height="75" Click="Continue_Click"/>
-                    <TextBox Grid.Row="1" FontSize="20" x:Name="txtGameCode" ToolTip="Game Code Here" BorderThickness="2" Margin="15,0,15,15" />
+                    <Grid  VerticalAlignment="Top" Background="#FF673AB7" Height="30">
+                        <TextBlock Text="ONLINE GAMES" Foreground="White" HorizontalAlignment="Left" Margin="15,0,0,0" VerticalAlignment="Center"/>
+                    </Grid>
+                    <ScrollViewer Grid.Row="1">
+                        <Grid Name="GrdGameList">
 
+
+                        </Grid>
+                    </ScrollViewer>
                 </Grid>
+                
+            </Border>
+           
 
-                <Button Name="btnLogout" Visibility="Collapsed" Content="Logout" Margin="15" Height="75" Click="Logout_Click"/>
+            <Button Name="btnLogout" Grid.Row="2" Content="Logout" Margin="15" Height="75" Click="Logout_Click"/>
+            
+            
+        </Grid>
+
+        <Grid Name="GrdWaitingPlayer2" Grid.Row="1" Visibility="Collapsed" Background="#FF000000">
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                <TextBlock Text="Esperando al player 2..." Foreground="White"  FontSize="30"></TextBlock>
+                <Button Name="btnCancelCreateGame" Margin="0,20,0,0"  Content="Cancelar" Click="BtnCancelCreateGame_Click"></Button>
             </StackPanel>
+        </Grid>
 
-        </StackPanel>
+
+        <Grid Name="GrdGameClosed" Grid.Row="1" Visibility="Collapsed" Background="#FF000000">
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                <TextBlock Name="txtGameClosed" Foreground="White"  FontSize="30"></TextBlock>
+                <Button Name="btnAceptarGameClosed" Margin="0,20,0,0"  Content="Aceptar" Click="btnAceptarGameClosed_Click"></Button>
+            </StackPanel>
+        </Grid>
 
     </Grid>
 </Window>
